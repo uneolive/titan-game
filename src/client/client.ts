@@ -1,0 +1,83 @@
+import axios, { AxiosResponse, AxiosError } from 'axios';
+import Logger from '@/helpers/utilities/Logger.ts';
+
+/**
+ * Generic HTTP client for API requests
+ * @param endpoint - Full API endpoint URL
+ * @param body - Request body (for POST, PUT, PATCH)
+ * @param method - HTTP method
+ * @returns Promise<AxiosResponse>
+ */
+export async function client(
+  endpoint: string,
+  body: any = null,
+  method: string = 'GET'
+): Promise<AxiosResponse> {
+  const headers: Record<string, string> = {};
+
+  // Only set Content-Type for JSON requests (not FormData)
+  if (body && !(body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const config = {
+    method,
+    url: endpoint,
+    headers,
+    ...(body && { data: body }),
+  };
+
+  try {
+    const response = await axios(config);
+    return response;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError;
+      Logger.error('API request failed', {
+        endpoint,
+        method,
+        status: axiosError.response?.status,
+        message: axiosError.message,
+      });
+
+      // Handle 401 Unauthorized - clear session and redirect to login
+      if (axiosError.response?.status === 401) {
+        sessionStorage.clear();
+        window.location.href = '/';
+      }
+
+      throw axiosError;
+    }
+    throw error;
+  }
+}
+
+/**
+ * SSE client for Server-Sent Events streaming
+ * @param endpoint - Full API endpoint URL
+ * @param body - FormData for file uploads
+ * @returns Promise<Response>
+ */
+export async function fetchSSE(endpoint: string, body: FormData): Promise<Response> {
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body,
+    });
+
+    if (!response.ok) {
+      Logger.error('SSE request failed', {
+        endpoint,
+        status: response.status,
+      });
+    }
+
+    return response;
+  } catch (error) {
+    Logger.error('SSE connection error', {
+      endpoint,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+    throw error;
+  }
+}
