@@ -1,0 +1,105 @@
+name: Deploy React Frontend to S3
+
+permissions: write-all
+
+on:
+  push:
+    branches:
+      - dev
+      - uat
+
+jobs:
+  deploy_dev:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      AWS_OIDC_ROLE: ${{ secrets.AWS_OIDC_ROLE }}
+      AWS_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
+      NODE_VERSION: '22.20.0'
+      BUILD_DIR: dist
+      CLOUDFRONT_INVALIDATION_PATHS: "/*"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_OIDC_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync Build Folder to S3
+        run: |
+          aws s3 sync $BUILD_DIR/ s3://$AWS_S3_BUCKET --region $AWS_REGION
+
+      - name: Invalidate CloudFront Cache
+        if: success()
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID \
+            --paths $CLOUDFRONT_INVALIDATION_PATHS
+
+      - name: Cleanup Workspace
+        uses: AutoModality/action-clean@v1
+
+  deploy_uat:
+    if: github.ref == 'refs/heads/uat'
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_S3_BUCKET_UAT: ${{ secrets.AWS_S3_BUCKET_UAT }}
+      AWS_OIDC_ROLE: ${{ secrets.AWS_OIDC_ROLE }}
+      AWS_CLOUDFRONT_DISTRIBUTION_ID_UAT: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID_UAT }}
+      NODE_VERSION: '22.20.0'
+      BUILD_DIR: dist
+      CLOUDFRONT_INVALIDATION_PATHS_UAT: "/*"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Configure AWS Credentials via OIDC (UAT)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_OIDC_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync Build Folder to S3 (UAT)
+        run: |
+          aws s3 sync $BUILD_DIR/ s3://$AWS_S3_BUCKET_UAT --region $AWS_REGION
+
+      - name: Invalidate CloudFront Cache (UAT)
+        if: success()
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $AWS_CLOUDFRONT_DISTRIBUTION_ID_UAT \
+            --paths $CLOUDFRONT_INVALIDATION_PATHS_UAT
+
+      - name: Cleanup Workspace (UAT)
+        uses: AutoModality/action-clean@v1
+ 
