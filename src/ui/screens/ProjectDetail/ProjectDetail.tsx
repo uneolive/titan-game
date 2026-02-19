@@ -253,14 +253,15 @@ export function ProjectDetail() {
                   {specificationDocumentsCount}
                 </span>
               </div>
-              <button
-                onClick={handleNewSpecManual}
-                disabled={!isNewSpecManualEnabled()}
-                className="flex h-10 items-center gap-2 rounded-[10px] px-4 text-[14px] font-medium leading-5 transition-colors enabled:bg-[#1976D2] enabled:text-white enabled:hover:bg-[#1565C0] disabled:cursor-not-allowed disabled:bg-[#D1D5DB] disabled:text-[#9CA3AF]"
-              >
-                <FiPlus size={14} />
-                New Spec Manual
-              </button>
+              {isNewSpecManualEnabled() && (
+                <button
+                  onClick={handleNewSpecManual}
+                  className="flex h-10 items-center gap-2 rounded-[10px] bg-[#1976D2] px-4 text-[14px] font-medium leading-5 text-white transition-colors hover:bg-[#1565C0]"
+                >
+                  <FiPlus size={14} />
+                  New Spec Manual
+                </button>
+              )}
             </div>
 
             {/* Table or Empty State */}

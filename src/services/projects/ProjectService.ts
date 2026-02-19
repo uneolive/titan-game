@@ -19,7 +19,12 @@ export async function getProjects(
   sortOrder: string = 'asc'
 ): Promise<ServiceResult<ProjectsListDataDTO>> {
   try {
-    const endpoint = `${BASE_URL}${ENDPOINTS.PROJECTS}?sort_by=${sortBy}&sort_order=${sortOrder}`;
+    // Use URLSearchParams to safely build query string
+    const params = new URLSearchParams({
+      sort_by: sortBy,
+      sort_order: sortOrder,
+    });
+    const endpoint = `${BASE_URL}${ENDPOINTS.PROJECTS}?${params.toString()}`;
 
     // SEQ: 1.27 - Call client with fullEndpoint, null body, HTTP_METHOD.GET
     const response = await client(endpoint, null, HTTP_METHOD.GET);

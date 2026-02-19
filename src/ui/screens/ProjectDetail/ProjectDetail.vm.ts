@@ -23,7 +23,14 @@ export function useProjectDetail(projectId: string) {
   const [submittalsCount, setSubmittalsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('spec-manual');
+
+  // Initialize activeTab from URL hash or default to 'spec-manual'
+  const getInitialTab = () => {
+    const hash = window.location.hash.replace('#', '');
+    return hash === 'submittals' ? 'submittals' : 'spec-manual';
+  };
+
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [selectedDocumentUrl, setSelectedDocumentUrl] = useState<string | null>(null);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [showProgressPopup, setShowProgressPopup] = useState<string | null>(null);
@@ -54,7 +61,7 @@ export function useProjectDetail(projectId: string) {
           );
         },
         (completeData) => {
-                  // SEQ: 10.4 - Remove submittal from inProgressSubmittals Map
+          // SEQ: 10.4 - Remove submittal from inProgressSubmittals Map
           setInProgressSubmittals((prev) => {
             const newMap = new Map(prev);
             newMap.delete(submittalId);
@@ -122,47 +129,47 @@ export function useProjectDetail(projectId: string) {
   // SEQ: 1.24 - Call loadProjectDetails()
   const loadProjectDetails = useCallback(async () => {
     try {
-          setIsLoading(true);
-          setError(null);
+      setIsLoading(true);
+      setError(null);
 
-          // SEQ: 1.28 - Call getProjectDetails(projectId)
-          const result = await getProjectDetails(projectId);
+      // SEQ: 1.28 - Call getProjectDetails(projectId)
+      const result = await getProjectDetails(projectId);
 
-          if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-              const data = result.data;
+      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
+        const data = result.data;
 
-              setProject(data.project);
-              setSpecificationDocuments(data.specificationDocuments);
-              setSubmittals(data.submittals);
-              setSpecificationDocumentsCount(data.specificationDocumentsCount);
-              setSubmittalsCount(data.submittalsCount);
+        setProject(data.project);
+        setSpecificationDocuments(data.specificationDocuments);
+        setSubmittals(data.submittals);
+        setSpecificationDocumentsCount(data.specificationDocumentsCount);
+        setSubmittalsCount(data.submittalsCount);
 
-              // SEQ: 1.50 - Call subscribeToAllInProgressSubmittals()
+        // SEQ: 1.50 - Call subscribeToAllInProgressSubmittals()
         const inProgress = data.submittals.filter((s) => s.overallStatus === 'IN_PROGRESS');
         inProgress.forEach((submittal) => {
-                  handleSubscribeToProgress(submittal.submittalId);
+          handleSubscribeToProgress(submittal.submittalId);
         });
       } else if (result.statusCode === ServiceResultStatusENUM.UNAUTHORIZED) {
-              setError('Unauthorized');
+        setError('Unauthorized');
         navigate('/');
       } else {
-              setError(result.message);
+        setError(result.message);
       }
     } catch (error) {
-          Logger.error('Unexpected error in loadProjectDetails', {
+      Logger.error('Unexpected error in loadProjectDetails', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       setError('Failed to load project details');
     } finally {
-          setIsLoading(false);
+      setIsLoading(false);
     }
   }, [projectId, navigate, handleSubscribeToProgress]);
 
   // SEQ: 1.22 - useEffect with dependencies [projectId]
   useEffect(() => {
-      loadProjectDetails();
+    loadProjectDetails();
 
-      return () => {
+    return () => {
       inProgressSubmittals.forEach(({ eventSource }) => {
         // SEQ: 12.5 - Call unsubscribeFromSubmittalProgress
         unsubscribeFromSubmittalProgress(eventSource);
@@ -173,28 +180,52 @@ export function useProjectDetail(projectId: string) {
 
   // SEQ: 3.2 - Call handleTabChange(tab)
   const handleTabChange = useCallback((tab: string) => {
-      setActiveTab(tab);
+    setActiveTab(tab);
+    // Update URL hash to reflect active tab
+    window.location.hash = tab;
+  }, []);
+
+  // Listen for hash changes (browser back/forward)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash === 'submittals' || hash === 'spec-manual') {
+        setActiveTab(hash);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  // Set initial hash if not present
+  useEffect(() => {
+    if (!window.location.hash) {
+      window.location.hash = 'spec-manual';
+    }
   }, []);
 
   // SEQ: 4.2 - Call handleSpecDocumentClick(s3Url)
   const handleSpecDocumentClick = useCallback((s3Url: string) => {
-      setSelectedDocumentUrl(s3Url);
+    setSelectedDocumentUrl(s3Url);
     setShowPDFViewer(true);
   }, []);
 
   const handleClosePDFViewer = useCallback(() => {
-      setShowPDFViewer(false);
+    setShowPDFViewer(false);
     setSelectedDocumentUrl(null);
   }, []);
 
   // SEQ: 6.2 - Call handleNewSpecManual()
   const handleNewSpecManual = useCallback(() => {
-      navigate(`/projects/${projectId}/spec-manual`);
+    navigate(`/projects/${projectId}/spec-manual`);
   }, [projectId, navigate]);
 
   // SEQ: 6.3 - Call isNewSpecManualEnabled()
   const isNewSpecManualEnabled = useCallback(() => {
-      return (
+    return (
       specificationDocumentsCount === 1 &&
       specificationDocuments.some((doc) => doc.documentTag !== 'completemanual')
     );
@@ -202,16 +233,16 @@ export function useProjectDetail(projectId: string) {
 
   // SEQ: 7.2 - Call handleNewSubmittal()
   const handleNewSubmittal = useCallback(() => {
-      navigate(`/projects/${projectId}/submittal`);
+    navigate(`/projects/${projectId}/submittal`);
   }, [projectId, navigate]);
 
   // SEQ: 8.2 / 9.2 - Call handleSubmittalClick(submittal)
   const handleSubmittalClick = useCallback(
     (submittal: SubmittalBO) => {
-          if (submittal.overallStatus === 'IN_PROGRESS') {
-              setShowProgressPopup(submittal.submittalId);
+      if (submittal.overallStatus === 'IN_PROGRESS') {
+        setShowProgressPopup(submittal.submittalId);
       } else if (submittal.overallStatus !== 'FAILED') {
-              navigate(`/projects/${projectId}/submittal/${submittal.submittalId}/results`);
+        navigate(`/projects/${projectId}/submittal/${submittal.submittalId}/results`);
       }
     },
     [projectId, navigate]
@@ -254,5 +285,3 @@ export function useProjectDetail(projectId: string) {
     navigateBack,
   };
 }
-
-

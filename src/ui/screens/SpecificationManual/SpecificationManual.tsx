@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useSpecificationManual } from './SpecificationManual.vm.ts';
 import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { AnalyzingSpecPopup } from '@/ui/reusables/AnalyzingSpecPopup/AnalyzingSpecPopup.tsx';
+import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import {
   FiArrowLeft,
   FiX,
@@ -46,6 +47,7 @@ export function SpecificationManual() {
     isElectricalUploadDisabled,
     hasMechanicalDoc,
     hasElectricalDoc,
+    isDivisionSelectable,
     isFormValid,
     handleSubmit,
     navigateBack,
@@ -131,8 +133,8 @@ export function SpecificationManual() {
           )}
 
           {isLoading ? (
-            <div className="py-8 text-center">
-              <p className="text-[12.3px] text-[#6B7280]">Loading project setup...</p>
+            <div className="flex items-center justify-center py-12">
+              <Spinner size="lg" />
             </div>
           ) : (
             <form
@@ -288,7 +290,7 @@ export function SpecificationManual() {
                     </label>
                     <div
                       className="flex min-h-[42px] cursor-pointer items-center gap-2 rounded-[12px] border border-[#E5E7EB] bg-white px-[10.3px] py-2"
-                      onClick={() => !isFieldDisabled() && setIsDropdownOpen(!isDropdownOpen)}
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     >
                       <div className="flex flex-1 flex-wrap items-center gap-2">
                         {selectedDivisions.length === 0 ? (
@@ -300,17 +302,18 @@ export function SpecificationManual() {
                                 <span className="text-[10.5px] font-medium text-white">
                                   15 – Mechanical
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDivisionCheckbox('15');
-                                  }}
-                                  disabled={isFieldDisabled()}
-                                  className="text-white hover:text-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  <FiX size={14} />
-                                </button>
+                                {isDivisionSelectable('15') && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDivisionCheckbox('15');
+                                    }}
+                                    className="text-white hover:text-gray-200"
+                                  >
+                                    <FiX size={14} />
+                                  </button>
+                                )}
                               </div>
                             )}
                             {selectedDivisions.includes('16') && (
@@ -318,17 +321,18 @@ export function SpecificationManual() {
                                 <span className="text-[10.5px] font-medium text-white">
                                   16 – Electrical
                                 </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDivisionCheckbox('16');
-                                  }}
-                                  disabled={isFieldDisabled()}
-                                  className="text-white hover:text-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  <FiX size={14} />
-                                </button>
+                                {isDivisionSelectable('16') && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDivisionCheckbox('16');
+                                    }}
+                                    className="text-white hover:text-gray-200"
+                                  >
+                                    <FiX size={14} />
+                                  </button>
+                                )}
                               </div>
                             )}
                           </>
@@ -342,25 +346,36 @@ export function SpecificationManual() {
                       />
                     </div>
                     {/* Division checkboxes dropdown */}
-                    {!isFieldDisabled() && isDropdownOpen && (
+                    {isDropdownOpen && (
                       <div className="mt-2 space-y-2 rounded-[8px] border border-[#E5E7EB] bg-white p-3">
+                        {/* In edit mode, show all divisions but disable those with existing documents */}
                         <label className="flex cursor-pointer items-center gap-3">
                           <input
                             type="checkbox"
                             checked={selectedDivisions.includes('15')}
                             onChange={() => handleDivisionCheckbox('15')}
-                            className="h-4 w-4 rounded border-[#D1D5DB] text-[#3B82F6] focus:ring-[#3B82F6]"
+                            disabled={!isDivisionSelectable('15')}
+                            className="h-4 w-4 rounded border-[#D1D5DB] text-[#3B82F6] focus:ring-[#3B82F6] disabled:cursor-not-allowed disabled:opacity-50"
                           />
-                          <span className="text-[12.3px] text-[#111827]">15 - Mechanical</span>
+                          <span
+                            className={`text-[12.3px] ${!isDivisionSelectable('15') ? 'text-[#9CA3AF]' : 'text-[#111827]'}`}
+                          >
+                            15 - Mechanical {!isDivisionSelectable('15') && '(Already uploaded)'}
+                          </span>
                         </label>
                         <label className="flex cursor-pointer items-center gap-3">
                           <input
                             type="checkbox"
                             checked={selectedDivisions.includes('16')}
                             onChange={() => handleDivisionCheckbox('16')}
-                            className="h-4 w-4 rounded border-[#D1D5DB] text-[#3B82F6] focus:ring-[#3B82F6]"
+                            disabled={!isDivisionSelectable('16')}
+                            className="h-4 w-4 rounded border-[#D1D5DB] text-[#3B82F6] focus:ring-[#3B82F6] disabled:cursor-not-allowed disabled:opacity-50"
                           />
-                          <span className="text-[12.3px] text-[#111827]">16 - Electrical</span>
+                          <span
+                            className={`text-[12.3px] ${!isDivisionSelectable('16') ? 'text-[#9CA3AF]' : 'text-[#111827]'}`}
+                          >
+                            16 - Electrical {!isDivisionSelectable('16') && '(Already uploaded)'}
+                          </span>
                         </label>
                       </div>
                     )}

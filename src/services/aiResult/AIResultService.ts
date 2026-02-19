@@ -5,7 +5,10 @@ import { mockClient as client, MockEventSource } from '@/client/mockClient.ts';
 
 import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
 import { ServiceResult } from '@/types/common/ServiceResult.ts';
-import { adaptApiResponse, serviceFailureResponse } from '@/helpers/utilities/serviceHelpers.ts';
+import {
+  serviceFailureResponse,
+  mapResponseCodeToServiceResult,
+} from '@/helpers/utilities/serviceHelpers.ts';
 import { BASE_URL, ENDPOINTS, HTTP_METHOD } from '@/constants/apiConstants.ts';
 import Logger from '@/helpers/utilities/Logger.ts';
 import {
@@ -27,13 +30,12 @@ export async function getSubmittalResult(
 
     const camelCaseData = convertKeysToCamelCase<SubmittalResultResponseDTO>(response.data);
 
-    if (camelCaseData.code === 200) {
-      return adaptApiResponse<SubmittalResultDataDTO>({ ...response, data: camelCaseData });
-    } else if (camelCaseData.code === 404) {
-      return serviceFailureResponse<SubmittalResultDataDTO>(null, 'Submittal result not found');
-    } else {
-      return serviceFailureResponse<SubmittalResultDataDTO>(null, camelCaseData.message);
-    }
+    return mapResponseCodeToServiceResult<SubmittalResultDataDTO>(
+      camelCaseData.code,
+      camelCaseData.data,
+      camelCaseData.message,
+      response
+    );
   } catch (error) {
     Logger.error('Service exception in getSubmittalResult', {
       submittalId,
@@ -67,7 +69,12 @@ export function subscribeToSubmittalProgress(
     } catch (error) {
       Logger.error('Error parsing progress event', {
         error: error instanceof Error ? error.message : 'Unknown error',
+        rawData: event.data,
       });
+
+      // Close connection and notify error
+      eventSource.close();
+      onError('Failed to parse progress data');
     }
   });
 
@@ -80,7 +87,12 @@ export function subscribeToSubmittalProgress(
     } catch (error) {
       Logger.error('Error parsing complete event', {
         error: error instanceof Error ? error.message : 'Unknown error',
+        rawData: event.data,
       });
+
+      // Close connection and notify error
+      eventSource.close();
+      onError('Failed to parse completion data');
     }
   });
 
@@ -112,5 +124,3 @@ export function subscribeToSubmittalProgress(
 export function unsubscribeFromSubmittalProgress(eventSource: EventSource): void {
   eventSource.close();
 }
-
-

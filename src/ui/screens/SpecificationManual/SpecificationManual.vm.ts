@@ -37,20 +37,27 @@ export function useSpecificationManual(projectId: string) {
   // SEQ: 2.2 - Call loadProjectSetup()
   const loadProjectSetup = useCallback(async () => {
     try {
-          setIsLoading(true);
+      setIsLoading(true);
 
-          // SEQ: 2.5 - Call getProjectSetup(projectId)
-          const result = await getProjectSetup(projectId);
+      // SEQ: 2.5 - Call getProjectSetup(projectId)
+      const result = await getProjectSetup(projectId);
 
-          if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-              const setupData = result.data;
+      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
+        const setupData = result.data;
 
-              setProjectName(setupData.projectName);
-              setProjectType(setupData.projectType);
-              setIsDivisionBased(setupData.isDivisionBased);
-              setSelectedDivisions(setupData.divisions.map((d) => d.divisionNumber));
+        setProjectName(setupData.projectName);
+        setProjectType(setupData.projectType);
+        setIsDivisionBased(setupData.isDivisionBased);
 
-              setupData.divisions.forEach((division) => {
+        // In edit mode, always select both divisions (15 and 16) by default
+        // This allows users to see and add missing division documents
+        if (setupData.isDivisionBased) {
+          setSelectedDivisions(['15', '16']);
+        } else {
+          setSelectedDivisions(setupData.divisions.map((d) => d.divisionNumber));
+        }
+
+        setupData.divisions.forEach((division) => {
           if (division.divisionNumber === '15' && division.documents.length > 0) {
             setExistingMechanicalDoc(division.documents[0]);
           }
@@ -59,42 +66,42 @@ export function useSpecificationManual(projectId: string) {
           }
         });
       } else {
-              setError(result.message);
+        setError(result.message);
       }
     } catch (error) {
-          Logger.error('Unexpected error in loadProjectSetup', {
+      Logger.error('Unexpected error in loadProjectSetup', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       setError('Failed to load project setup');
     } finally {
-          setIsLoading(false);
+      setIsLoading(false);
     }
   }, [projectId]);
 
   // SEQ: 1.25 - useEffect with dependencies [projectId, isNewProject]
   useEffect(() => {
     if (!isNewProject) {
-          loadProjectSetup();
+      loadProjectSetup();
     }
   }, [isNewProject, loadProjectSetup]);
 
   // SEQ: 3.2 - Call handleProjectNameChange(value)
   const handleProjectNameChange = useCallback((value: string) => {
-      setProjectName(value);
-      setProjectNameError(null);
-      setError(null);
+    setProjectName(value);
+    setProjectNameError(null);
+    setError(null);
   }, []);
 
   // SEQ: 4.2 - Call handleProjectTypeChange(value)
   const handleProjectTypeChange = useCallback((value: string) => {
-      setProjectType(value);
-      setProjectTypeError(null);
-      setError(null);
+    setProjectType(value);
+    setProjectTypeError(null);
+    setError(null);
   }, []);
 
   // SEQ: 5.2 - Call handleDivisionBasedToggle()
   const handleDivisionBasedToggle = useCallback(() => {
-      setIsDivisionBased((prev) => {
+    setIsDivisionBased((prev) => {
       const newValue = !prev;
       if (newValue) {
         setSelectedDivisions(['15', '16']);
@@ -103,7 +110,7 @@ export function useSpecificationManual(projectId: string) {
       }
       return newValue;
     });
-      setFileError(null);
+    setFileError(null);
     setCompleteSpecFile(null);
     setMechanicalDivisionFile(null);
     setElectricalDivisionFile(null);
@@ -111,52 +118,52 @@ export function useSpecificationManual(projectId: string) {
 
   // SEQ: 6.2 - Call handleDivisionSelection(divisions)
   const handleDivisionSelection = useCallback((divisions: string[]) => {
-      setSelectedDivisions(divisions);
-      setFileError(null);
+    setSelectedDivisions(divisions);
+    setFileError(null);
   }, []);
 
   // SEQ: 7.2 - Call handleCompleteFileUpload(file)
   const handleCompleteFileUpload = useCallback((file: File) => {
-      // SEQ: 7.3 - Call isValidPDF(file)
-      if (isValidPDF(file)) {
-          setCompleteSpecFile(file);
-          setFileError(null);
+    // SEQ: 7.3 - Call isValidPDF(file)
+    if (isValidPDF(file)) {
+      setCompleteSpecFile(file);
+      setFileError(null);
     } else {
-          setFileError('Only PDF files are accepted');
+      setFileError('Only PDF files are accepted');
     }
   }, []);
 
   // SEQ: 8.3 - Call handleMechanicalFileUpload(file)
   const handleMechanicalFileUpload = useCallback((file: File) => {
-      // SEQ: 8.4 - Call isValidPDF(file)
-      if (isValidPDF(file)) {
-          setMechanicalDivisionFile(file);
-          setFileError(null);
+    // SEQ: 8.4 - Call isValidPDF(file)
+    if (isValidPDF(file)) {
+      setMechanicalDivisionFile(file);
+      setFileError(null);
     } else {
-          setFileError('Only PDF files are accepted');
+      setFileError('Only PDF files are accepted');
     }
   }, []);
 
   const handleElectricalFileUpload = useCallback((file: File) => {
-      // SEQ: 8.4 - Call isValidPDF(file)
-      if (isValidPDF(file)) {
-          setElectricalDivisionFile(file);
-          setFileError(null);
+    // SEQ: 8.4 - Call isValidPDF(file)
+    if (isValidPDF(file)) {
+      setElectricalDivisionFile(file);
+      setFileError(null);
     } else {
-          setFileError('Only PDF files are accepted');
+      setFileError('Only PDF files are accepted');
     }
   }, []);
 
   // SEQ: 9.2 - Call handleRemoveFile(fileType)
   const handleRemoveFile = useCallback((fileType: string) => {
-      if (fileType === 'complete') {
+    if (fileType === 'complete') {
       setCompleteSpecFile(null);
     } else if (fileType === 'mechanical') {
       setMechanicalDivisionFile(null);
     } else if (fileType === 'electrical') {
       setElectricalDivisionFile(null);
     }
-      setFileError(null);
+    setFileError(null);
   }, []);
 
   const isFieldDisabled = useCallback(() => !isNewProject, [isNewProject]);
@@ -179,6 +186,20 @@ export function useSpecificationManual(projectId: string) {
   const hasElectricalDoc = useCallback(
     () => existingElectricalDoc !== null,
     [existingElectricalDoc]
+  );
+
+  // Check if a division can be selected (no existing document)
+  const isDivisionSelectable = useCallback(
+    (divisionNumber: string): boolean => {
+      if (divisionNumber === '15') {
+        return existingMechanicalDoc === null;
+      }
+      if (divisionNumber === '16') {
+        return existingElectricalDoc === null;
+      }
+      return false;
+    },
+    [existingMechanicalDoc, existingElectricalDoc]
   );
 
   const validateProjectName = useCallback((): boolean => {
@@ -242,28 +263,28 @@ export function useSpecificationManual(projectId: string) {
   // SEQ: 10.2 - Call handleSubmit()
   const handleSubmit = useCallback(async () => {
     try {
-          if (!validateForm()) {
-              return;
+      if (!validateForm()) {
+        return;
       }
 
-          setIsAnalyzing(true);
+      setIsAnalyzing(true);
 
-          const formData = new FormData();
+      const formData = new FormData();
 
-          if (!isNewProject) {
-              formData.append('project_id', projectId);
+      if (!isNewProject) {
+        formData.append('project_id', projectId);
       } else {
-              formData.append('project_name', projectName);
+        formData.append('project_name', projectName);
         formData.append('project_type', projectType);
       }
 
-          if (!isDivisionBased) {
-              formData.append('upload_mode', 'complete');
+      if (!isDivisionBased) {
+        formData.append('upload_mode', 'complete');
         if (completeSpecFile) {
           formData.append('specification_file', completeSpecFile);
         }
       } else {
-              formData.append('upload_mode', 'division');
+        formData.append('upload_mode', 'division');
         if (mechanicalDivisionFile) {
           formData.append('mechanical_division_file', mechanicalDivisionFile);
         }
@@ -272,24 +293,24 @@ export function useSpecificationManual(projectId: string) {
         }
       }
 
-          // SEQ: 11.20 - Call uploadSpecManual(formData)
-          const result = await uploadSpecManual(formData);
+      // SEQ: 11.20 - Call uploadSpecManual(formData)
+      const result = await uploadSpecManual(formData);
 
-          if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-              const newProjectId = result.data.projectId;
-              navigate(`/projects/${newProjectId}/submittal`);
+      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
+        const newProjectId = result.data.projectId;
+        navigate(`/projects/${newProjectId}/submittal`);
       } else if (result.statusCode === ServiceResultStatusENUM.VALIDATION_ERROR) {
-              setError(result.message);
+        setError(result.message);
       } else {
-              setError(result.message);
+        setError(result.message);
       }
     } catch (error) {
-          Logger.error('Unexpected error in handleSubmit', {
+      Logger.error('Unexpected error in handleSubmit', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       setError('Failed to upload specification manual');
     } finally {
-          setIsAnalyzing(false);
+      setIsAnalyzing(false);
     }
   }, [
     validateForm,
@@ -305,7 +326,7 @@ export function useSpecificationManual(projectId: string) {
   ]);
 
   const navigateBack = useCallback(() => {
-      navigate('/projects');
+    navigate('/projects');
   }, [navigate]);
 
   // Check if form is valid for submission
@@ -362,10 +383,9 @@ export function useSpecificationManual(projectId: string) {
     isElectricalUploadDisabled,
     hasMechanicalDoc,
     hasElectricalDoc,
+    isDivisionSelectable,
     isFormValid: isFormValid(),
     handleSubmit,
     navigateBack,
   };
 }
-
-

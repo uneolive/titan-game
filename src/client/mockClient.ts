@@ -1,6 +1,10 @@
 import { AxiosResponse } from 'axios';
 import Logger from '@/helpers/utilities/Logger.ts';
 
+// Type definitions
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type RequestBody = Record<string, any> | FormData | null;
+
 /**
  * Mock EventSource for testing SSE without backend
  * Simulates real-time progress updates for submittal analysis
@@ -124,8 +128,8 @@ export class MockEventSource {
  */
 export async function mockClient(
   endpoint: string,
-  body: any = null,
-  method: string = 'GET'
+  body: RequestBody = null,
+  method: HttpMethod = 'GET'
 ): Promise<AxiosResponse> {
   // Simulate network delay (3 seconds)
   await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -138,9 +142,9 @@ export async function mockClient(
   } else if (endpoint.includes('/api/projects') && !endpoint.includes('/api/projects/')) {
     return mockProjectsListResponse();
   } else if (endpoint.includes('/api/projects/') && endpoint.includes('/details')) {
-    return mockProjectDetailsResponse();
+    return mockProjectDetailsResponse(endpoint);
   } else if (endpoint.includes('/api/projects/') && endpoint.includes('/setup')) {
-    return mockProjectSetupResponse();
+    return mockProjectSetupResponse(endpoint);
   } else if (endpoint.includes('/api/projects/') && endpoint.includes('/sections')) {
     return mockSpecSectionsResponse();
   } else if (endpoint.includes('/api/spec-upload')) {
@@ -167,7 +171,11 @@ export async function mockClient(
 /**
  * Mock SSE client for testing submittal upload
  */
-export async function mockFetchSSE(endpoint: string, _body: FormData): Promise<Response> {
+export async function mockFetchSSE(
+  endpoint: string,
+  _body: FormData,
+  _signal?: AbortSignal
+): Promise<Response> {
   Logger.info('Mock SSE call', { endpoint });
 
   // Create a mock ReadableStream that simulates SSE events
@@ -344,10 +352,128 @@ function mockProjectsListResponse(): AxiosResponse {
   };
 }
 
-function mockProjectDetailsResponse(): AxiosResponse {
+function mockProjectDetailsResponse(endpoint: string): AxiosResponse {
   // Using Mozilla's PDF.js sample - allows iframe embedding
   const samplePdfUrl = 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf';
 
+  // Extract project ID from endpoint
+  const projectIdMatch = endpoint.match(/\/api\/projects\/([^\/]+)\/details/);
+  const projectId = projectIdMatch ? projectIdMatch[1] : 'proj-001';
+
+  // Return different data based on project ID
+  if (projectId === 'proj-002') {
+    // Hospital Expansion Project - Only Electrical document (to test New Spec Manual button)
+    return {
+      data: {
+        status: 'success',
+        code: 200,
+        message: 'Project details retrieved successfully',
+        data: {
+          project: {
+            project_id: 'proj-002',
+            project_name: 'Hospital Expansion Project',
+            project_type: 'Construction',
+          },
+          specification_documents_count: 1,
+          submittals_count: 3,
+          specification_documents: [
+            {
+              document_id: 'doc-elec-001',
+              document_name: 'Electrical_Division_Specs.pdf',
+              document_tag: '16-Electrical',
+              s3_url: samplePdfUrl,
+              date: new Date().toISOString(),
+            },
+          ],
+          submittals: [
+            {
+              submittal_id: 'sub-005',
+              submittal_title: 'Emergency Power System',
+              spec_section: '16 30 00',
+              overall_status: 'COMPLIANT',
+              progress_pct: 100,
+              date: new Date().toISOString(),
+            },
+            {
+              submittal_id: 'sub-006',
+              submittal_title: 'Fire Alarm Control Panel',
+              spec_section: '16 70 00',
+              overall_status: 'IN_PROGRESS',
+              progress_pct: 55,
+              date: new Date().toISOString(),
+            },
+            {
+              submittal_id: 'sub-007',
+              submittal_title: 'Lighting Control System',
+              spec_section: '16 50 00',
+              overall_status: 'NON_COMPLIANT',
+              progress_pct: 100,
+              date: new Date().toISOString(),
+            },
+          ],
+        },
+        request_id: 'mock-request-123',
+        timestamp: new Date().toISOString(),
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    };
+  } else if (projectId === 'proj-003') {
+    // University Library Building - Complete Manual (button should be hidden)
+    return {
+      data: {
+        status: 'success',
+        code: 200,
+        message: 'Project details retrieved successfully',
+        data: {
+          project: {
+            project_id: 'proj-003',
+            project_name: 'University Library Building',
+            project_type: 'Engineering',
+          },
+          specification_documents_count: 1,
+          submittals_count: 2,
+          specification_documents: [
+            {
+              document_id: 'doc-complete-001',
+              document_name: 'Complete_Specification_Manual.pdf',
+              document_tag: 'completemanual',
+              s3_url: samplePdfUrl,
+              date: new Date().toISOString(),
+            },
+          ],
+          submittals: [
+            {
+              submittal_id: 'sub-008',
+              submittal_title: 'HVAC System',
+              spec_section: '15 50 00',
+              overall_status: 'COMPLIANT',
+              progress_pct: 100,
+              date: new Date().toISOString(),
+            },
+            {
+              submittal_id: 'sub-009',
+              submittal_title: 'Plumbing Fixtures',
+              spec_section: '15 40 00',
+              overall_status: 'IN_PROGRESS',
+              progress_pct: 30,
+              date: new Date().toISOString(),
+            },
+          ],
+        },
+        request_id: 'mock-request-123',
+        timestamp: new Date().toISOString(),
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    };
+  }
+
+  // Default: proj-001 - Downtown Office Complex (2 documents, button should be hidden)
   return {
     data: {
       status: 'success',
@@ -422,7 +548,48 @@ function mockProjectDetailsResponse(): AxiosResponse {
   };
 }
 
-function mockProjectSetupResponse(): AxiosResponse {
+function mockProjectSetupResponse(endpoint: string): AxiosResponse {
+  // Extract project ID from endpoint
+  const projectIdMatch = endpoint.match(/\/api\/projects\/([^\/]+)\/setup/);
+  const projectId = projectIdMatch ? projectIdMatch[1] : 'proj-001';
+
+  // Return different data based on project ID
+  if (projectId === 'proj-002') {
+    // Hospital Expansion Project - Only Electrical document
+    return {
+      data: {
+        status: 'success',
+        code: 200,
+        message: 'Project setup data retrieved successfully',
+        data: {
+          project_name: 'Hospital Expansion Project',
+          project_type: 'Construction',
+          is_division_based: true,
+          divisions: [
+            {
+              division_number: '16',
+              division_name: 'Electrical',
+              documents: [
+                {
+                  document_id: 'doc-elec-001',
+                  document_name: 'Electrical_Division_Specs.pdf',
+                  document_tag: '16-Electrical',
+                },
+              ],
+            },
+          ],
+        },
+        request_id: 'mock-request-123',
+        timestamp: new Date().toISOString(),
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any,
+    };
+  }
+
+  // Default: proj-001 - Downtown Office Complex
   return {
     data: {
       status: 'success',
