@@ -234,7 +234,10 @@ export function Submittal() {
                             type="button"
                             className="flex w-full items-center justify-between px-4 py-2 text-left text-sm transition-colors hover:bg-gray-100"
                             onClick={() => {
-                              handleInputChange('specSection', section.number);
+                              handleInputChange(
+                                'specSection',
+                                `${section.number} - ${section.title}`
+                              );
                               setSearchTerm('');
                               setShowDropdown(false);
                             }}

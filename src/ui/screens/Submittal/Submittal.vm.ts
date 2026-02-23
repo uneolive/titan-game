@@ -43,13 +43,13 @@ export function useSubmittal(projectId: string) {
   // SEQ: 2.1 - Call loadSpecificationSections()
   const loadSpecificationSections = useCallback(async () => {
     try {
-          setIsLoadingSections(true);
+      setIsLoadingSections(true);
 
-          // SEQ: 2.4 - Call getSpecificationSections(projectId)
-          const result = await getSpecificationSections(projectId);
+      // SEQ: 2.4 - Call getSpecificationSections(projectId)
+      const result = await getSpecificationSections(projectId);
 
-          if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-              const divisions = result.data.divisions;
+      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
+        const divisions = result.data.divisions;
         const allSections: SpecSectionBO[] = [];
 
         if (divisions.mechanical) {
@@ -72,35 +72,35 @@ export function useSubmittal(projectId: string) {
           });
         }
 
-              // SEQ: 2.30 - Call setSpecSections with sections array
-              setSpecSections(allSections);
+        // SEQ: 2.30 - Call setSpecSections with sections array
+        setSpecSections(allSections);
       } else {
-              setErrors((prev) => ({ ...prev, general: result.message }));
+        setErrors((prev) => ({ ...prev, general: result.message }));
       }
     } catch (error) {
-          Logger.error('Unexpected error in loadSpecificationSections', {
+      Logger.error('Unexpected error in loadSpecificationSections', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       setErrors((prev) => ({ ...prev, general: 'Failed to load specification sections' }));
     } finally {
-          setIsLoadingSections(false);
+      setIsLoadingSections(false);
     }
   }, [projectId]);
 
   // SEQ: 1.25 - useEffect with dependencies [projectId]
   useEffect(() => {
-      loadSpecificationSections();
+    loadSpecificationSections();
   }, [loadSpecificationSections]);
 
   // SEQ: 3.2 - Call handleInputChange(field, value)
   const handleInputChange = useCallback((field: keyof SubmittalFormData, value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-      setErrors((prev) => ({ ...prev, [field]: null, general: null }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: null, general: null }));
   }, []);
 
   // SEQ: 6.2 - Call handleFileUpload(files)
   const handleFileUpload = useCallback((files: FileList) => {
-      const validFiles: File[] = [];
+    const validFiles: File[] = [];
     let hasInvalidFile = false;
 
     Array.from(files).forEach((file) => {
@@ -112,40 +112,40 @@ export function useSubmittal(projectId: string) {
       }
     });
 
-      if (hasInvalidFile) {
+    if (hasInvalidFile) {
       setErrors((prev) => ({ ...prev, files: 'Only PDF files are accepted' }));
     } else {
       setErrors((prev) => ({ ...prev, files: null }));
     }
 
-      setUploadedFiles((prev) => [...prev, ...validFiles]);
+    setUploadedFiles((prev) => [...prev, ...validFiles]);
   }, []);
 
   // SEQ: 7.2 - Call handleRemoveFile(index)
   const handleRemoveFile = useCallback((index: number) => {
-      setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-      setErrors((prev) => ({ ...prev, files: null }));
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+    setErrors((prev) => ({ ...prev, files: null }));
   }, []);
 
   const validateTitle = useCallback((): boolean => {
-      if (!isValidTitle(formData.title)) {
-          setErrors((prev) => ({ ...prev, title: 'Title must be at least 3 characters' }));
+    if (!isValidTitle(formData.title)) {
+      setErrors((prev) => ({ ...prev, title: 'Title must be at least 3 characters' }));
       return false;
     }
     return true;
   }, [formData.title]);
 
   const validateSpecSection = useCallback((): boolean => {
-      if (!isValidSpecSection(formData.specSection)) {
-          setErrors((prev) => ({ ...prev, specSection: 'Please select a specification section' }));
+    if (!isValidSpecSection(formData.specSection)) {
+      setErrors((prev) => ({ ...prev, specSection: 'Please select a specification section' }));
       return false;
     }
     return true;
   }, [formData.specSection]);
 
   const validateFiles = useCallback((): boolean => {
-      if (uploadedFiles.length === 0) {
-          setErrors((prev) => ({
+    if (uploadedFiles.length === 0) {
+      setErrors((prev) => ({
         ...prev,
         files: 'Please upload at least one submittal document',
       }));
@@ -156,20 +156,20 @@ export function useSubmittal(projectId: string) {
 
   // SEQ: 8.3 - Call validateForm()
   const validateForm = useCallback((): boolean => {
-      const isTitleValid = validateTitle();
+    const isTitleValid = validateTitle();
     const isSpecSectionValid = validateSpecSection();
     const areFilesValid = validateFiles();
 
-      return isTitleValid && isSpecSectionValid && areFilesValid;
+    return isTitleValid && isSpecSectionValid && areFilesValid;
   }, [validateTitle, validateSpecSection, validateFiles]);
 
   // SEQ: 9.20 - Call handleSSEStream(response)
   const handleSSEStream = useCallback(
     async (response: Response) => {
-          const reader = response.body?.getReader();
+      const reader = response.body?.getReader();
       const decoder = new TextDecoder();
 
-          if (!reader) {
+      if (!reader) {
         throw new Error('No reader available');
       }
 
@@ -177,7 +177,7 @@ export function useSubmittal(projectId: string) {
       let eventType = '';
 
       try {
-              while (true) {
+        while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
@@ -185,32 +185,32 @@ export function useSubmittal(projectId: string) {
           const lines = chunk.split('\n');
 
           for (const line of lines) {
-                      if (line.startsWith('event:')) {
+            if (line.startsWith('event:')) {
               eventType = line.substring(7).trim();
             } else if (line.startsWith('data:')) {
-                          const data = JSON.parse(line.substring(6));
+              const data = JSON.parse(line.substring(6));
               const camelCaseData = convertKeysToCamelCase<any>(data);
 
-                          if (eventType === 'created') {
-                              // SEQ: 9.31 - Call setSubmittalId(data.submittalId)
-                              setSubmittalId(camelCaseData.submittalId);
+              if (eventType === 'created') {
+                // SEQ: 9.31 - Call setSubmittalId(data.submittalId)
+                setSubmittalId(camelCaseData.submittalId);
                 setProgressPct(0);
               } else if (eventType === 'progress') {
-                              setProgressPct(camelCaseData.progressPct);
+                setProgressPct(camelCaseData.progressPct);
                 // SEQ: 9.38 - Replace steps array with data.steps (incremental)
                 setSteps(camelCaseData.steps);
                 if (camelCaseData.steps.length > 0) {
                   setCurrentStep(camelCaseData.steps[camelCaseData.steps.length - 1]);
                 }
               } else if (eventType === 'complete') {
-                              setProgressPct(100);
+                setProgressPct(100);
                 setSteps(camelCaseData.steps);
                 setIsAnalyzing(false);
                 readerRef.current = null;
-                              // SEQ: 9.45 - Call navigate to results
-                              navigate(`/projects/${projectId}/submittal/${camelCaseData.submittalId}/results`);
+                // SEQ: 9.45 - Call navigate to results
+                navigate(`/projects/${projectId}/submittal/${camelCaseData.submittalId}/results`);
               } else if (eventType === 'error') {
-                              setIsAnalyzing(false);
+                setIsAnalyzing(false);
                 setSteps(camelCaseData.steps || []);
                 readerRef.current = null;
                 setErrors((prev) => ({
@@ -222,7 +222,7 @@ export function useSubmittal(projectId: string) {
           }
         }
       } catch (error) {
-              if (error instanceof Error && error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           Logger.info('SSE stream cancelled by user');
         } else {
           Logger.error('Error reading SSE stream', {
@@ -240,28 +240,30 @@ export function useSubmittal(projectId: string) {
   // SEQ: 8.2 - Call handleSubmit()
   const handleSubmit = useCallback(async () => {
     try {
-          if (!validateForm()) {
-              return;
+      if (!validateForm()) {
+        return;
       }
 
-          setIsAnalyzing(true);
-          setErrors({ title: null, specSection: null, files: null, general: null });
+      setIsAnalyzing(true);
+      setErrors({ title: null, specSection: null, files: null, general: null });
 
-          const formDataToSend = new FormData();
+      const formDataToSend = new FormData();
       formDataToSend.append('project_id', projectId);
       formDataToSend.append('title', formData.title);
-      formDataToSend.append('spec_section', formData.specSection);
+      // Extract just the section number from the formatted string (e.g., "16 05 00 - Title" -> "16 05 00")
+      const specSectionNumber = formData.specSection.split(' - ')[0].trim();
+      formDataToSend.append('spec_section', specSectionNumber);
       formDataToSend.append('description', formData.description);
 
-          uploadedFiles.forEach((file) => {
+      uploadedFiles.forEach((file) => {
         formDataToSend.append('files', file);
       });
 
-          // SEQ: 9.10 - Call uploadSubmittal(formData)
-          const response = await uploadSubmittal(formDataToSend);
-          await handleSSEStream(response);
+      // SEQ: 9.10 - Call uploadSubmittal(formData)
+      const response = await uploadSubmittal(formDataToSend);
+      await handleSSEStream(response);
     } catch (error) {
-          Logger.error('Unexpected error in handleSubmit', {
+      Logger.error('Unexpected error in handleSubmit', {
         error: error instanceof Error ? error.message : 'Unknown error',
       });
       setIsAnalyzing(false);
@@ -314,5 +316,3 @@ export function useSubmittal(projectId: string) {
     navigateBack,
   };
 }
-
-
