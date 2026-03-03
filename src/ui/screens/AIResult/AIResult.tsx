@@ -28,7 +28,7 @@ export function AIResult() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Header userName={userName} userRole="Contractor" />
+        <Header userName={userName} userRole="User" />
         <main className="mx-auto flex min-h-[calc(100vh-200px)] w-[1200px] items-center justify-center py-8">
           <div className="flex flex-col items-center gap-4">
             <Spinner size="lg" color="#2563eb" />
@@ -42,7 +42,7 @@ export function AIResult() {
   if (error || !resultData) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header userName={userName} userRole="Contractor" />
+        <Header userName={userName} userRole="User" />
         <main className="mx-auto max-w-7xl px-6 py-8">
           <div className="card">
             <div className="mb-4 rounded bg-red-50 p-4 text-error" role="alert">
@@ -62,7 +62,7 @@ export function AIResult() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header userName={userName} userRole="Contractor" />
+      <Header userName={userName} userRole="User" />
 
       {/* Progress Stepper */}
       <div className="border-b border-[#E5E7EB] bg-white px-6 py-[21px]">
@@ -161,7 +161,10 @@ export function AIResult() {
               </div>
               <div>
                 <h3 className="text-[17.5px] font-semibold leading-[24.5px] text-[#101828]">
-                  Submittal is {isCompliant ? 'Compliant' : 'Non-Compliant'}
+                  Submittal is{' '}
+                  {resultData.overallStatus
+                    .replace(/_/g, ' ')
+                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                 </h3>
                 <p className="text-[14px] leading-[21px] text-[#4A5565]">
                   {isCompliant ? 'All requirements have been met' : 'Some requirements are not met'}
@@ -192,7 +195,9 @@ export function AIResult() {
                 <div className="flex items-center gap-[12.25px]">
                   <div className="size-[7px] flex-shrink-0 rounded-full bg-[#FBBF24]" />
                   <span className="text-[12.3px] font-medium leading-[17.5px] text-[#101828]">
-                    Review required
+                    {resultData.overallStatus
+                      .replace(/_/g, ' ')
+                      .replace(/\b\w/g, (l) => l.toUpperCase())}
                   </span>
                 </div>
               </div>
@@ -272,12 +277,12 @@ export function AIResult() {
             </div>
 
             {/* Table */}
-            <div className="overflow-auto rounded-[12px] border border-[#E5E7EB] px-[21px]">
+            <div className="max-h-[600px] overflow-x-auto overflow-y-auto rounded-[12px] border border-[#E5E7EB] px-[21px]">
               <table className="w-full">
                 <thead className="sticky top-0 bg-[#F9FAFB]">
                   <tr className="border-b-[0.8px] border-[#D1D5DC]">
                     <th className="px-[7px] py-[8.6px] text-left text-[12.3px] font-semibold leading-[17.5px] text-[#101828]">
-                      Spec Requirement
+                      Item
                     </th>
                     <th className="px-[7px] py-[8.6px] text-left text-[12.3px] font-semibold leading-[17.5px] text-[#101828]">
                       Reference Value
@@ -299,33 +304,39 @@ export function AIResult() {
                 <tbody>
                   {resultData.findings.map((finding, index) => {
                     const isNonCompliant = finding.status === 'NON_COMPLIANT';
+                    const isCompliantStatus = finding.status === 'COMPLIANT';
                     const rowBgColor = isNonCompliant ? 'bg-[#FEF2F2]' : 'bg-white';
 
                     return (
-                      <tr key={index} className={`border-b-[0.8px] border-[#E5E7EB] ${rowBgColor}`}>
-                        <td className="px-[7px] py-[7.4px]">
+                      <tr
+                        key={index}
+                        className={`h-[80px] border-b-[0.8px] border-[#E5E7EB] ${rowBgColor}`}
+                      >
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <div className="flex items-center gap-[7px]">
                             <span className="text-[12.3px] font-semibold leading-[17.5px] text-[#101828]">
                               {finding.specRequirement}
                             </span>
                           </div>
                         </td>
-                        <td className="px-[7px] py-[7.4px]">
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <div className="space-y-[8.75px]">
-                            <div className="min-h-[26.1px] rounded-[10px] border border-[#BEDBFF] bg-[#EFF6FF] px-[10.3px] py-[5.5px]">
-                              <span className="break-words text-[12.3px] font-medium leading-[15.2px] text-[#1C398E]">
-                                {finding.referenceValue}
+                            <div className="flex min-h-[26.1px] items-center justify-center rounded-[10px] border border-[#BEDBFF] bg-[#EFF6FF] px-[10.3px] py-[5.5px]">
+                              <span className="break-words text-center text-[12.3px] font-medium leading-[15.2px] text-[#1C398E]">
+                                {finding.referenceValue || '-'}
                               </span>
                             </div>
-                            <button
-                              onClick={() => handleViewSpecDocument(finding.specReference.s3Url)}
-                              className="cursor-pointer text-[10.5px] leading-[14px] text-[#3B82F6] underline"
-                            >
-                              Section 16500, Part 2.3
-                            </button>
+                            {finding.specReference && finding.specReference.s3Url && (
+                              <button
+                                onClick={() => handleViewSpecDocument(finding.specReference.s3Url)}
+                                className="cursor-pointer text-[10.5px] leading-[14px] text-[#3B82F6] underline"
+                              >
+                                Section 16500, Part 2.3
+                              </button>
+                            )}
                           </div>
                         </td>
-                        <td className="px-[7px] py-[7.4px]">
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <div className="space-y-[8.75px]">
                             <div
                               className={`min-h-[26.1px] rounded-[10px] border px-[10.3px] py-[5.5px] ${
@@ -352,9 +363,16 @@ export function AIResult() {
                             </button>
                           </div>
                         </td>
-                        <td className="px-[7px] py-[7.4px]">
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <div className="flex items-center gap-[7px]">
-                            {isNonCompliant ? (
+                            {isCompliantStatus ? (
+                              <>
+                                <FiCheck className="size-[17.5px] flex-shrink-0 text-[#008236]" />
+                                <span className="whitespace-nowrap text-[12.3px] font-medium leading-[17.5px] text-[#008236]">
+                                  Compliant
+                                </span>
+                              </>
+                            ) : isNonCompliant ? (
                               <>
                                 <FiX className="size-[17.5px] flex-shrink-0 text-[#C10007]" />
                                 <span className="whitespace-nowrap text-[12.3px] font-medium leading-[17.5px] text-[#C10007]">
@@ -363,15 +381,16 @@ export function AIResult() {
                               </>
                             ) : (
                               <>
-                                <FiCheck className="size-[17.5px] flex-shrink-0 text-[#008236]" />
-                                <span className="whitespace-nowrap text-[12.3px] font-medium leading-[17.5px] text-[#008236]">
-                                  Compliant
+                                <span className="whitespace-nowrap text-[12.3px] font-medium leading-[17.5px] text-[#6B7280]">
+                                  {finding.status
+                                    .replace(/_/g, ' ')
+                                    .replace(/\b\w/g, (l) => l.toUpperCase())}
                                 </span>
                               </>
                             )}
                           </div>
                         </td>
-                        <td className="px-[7px] py-[7.4px]">
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <div
                             className={`inline-flex h-[24.5px] items-center justify-center rounded-[10px] px-[10.3px] ${
                               finding.confidenceScore >= 0.9 ? 'bg-[#DCFCE7]' : 'bg-[#FEF9C2]'
@@ -386,7 +405,7 @@ export function AIResult() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-[7px] py-[7.4px]">
+                        <td className="px-[7px] py-[7.4px] align-top">
                           <span
                             className={`text-[12.3px] leading-[17.5px] ${
                               finding.reviewNotes === 'No notes'

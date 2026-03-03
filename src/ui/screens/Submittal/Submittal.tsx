@@ -102,7 +102,7 @@ export function Submittal() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header userName={userName} userRole="Contractor" />
+      <Header userName={userName} userRole="User" />
 
       {/* Progress Stepper */}
       <div className="border-b border-[#E5E7EB] bg-white px-6 py-[21px]">

@@ -1,8 +1,4 @@
-// MOCK: Import mock client for testing without backend
-import { mockClient as client, MockEventSource } from '@/client/mockClient.ts';
-// REAL: Uncomment below line when backend is ready
-// import { client } from '@/client/client.ts';
-
+import { client } from '@/client/client.ts';
 import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
 import { ServiceResult } from '@/types/common/ServiceResult.ts';
 import {
@@ -56,10 +52,7 @@ export function subscribeToSubmittalProgress(
 ): EventSource {
   const endpoint = `${BASE_URL}${ENDPOINTS.SUBMITTAL_PROGRESS.replace(':submittalId', submittalId)}`;
 
-  // MOCK: Use MockEventSource for testing
-  const eventSource = new MockEventSource(endpoint) as unknown as EventSource;
-  // REAL: Use real EventSource when backend is ready
-  // const eventSource = new EventSource(endpoint);
+  const eventSource = new EventSource(endpoint);
 
   eventSource.addEventListener('progress', (event) => {
     try {

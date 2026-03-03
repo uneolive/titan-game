@@ -28,7 +28,7 @@ export async function client(
     method,
     url: endpoint,
     headers,
-    timeout: 30000, // 30 seconds
+    timeout: 300000, // 5 minutes
     ...(body && { data: body }),
   };
 
@@ -44,12 +44,6 @@ export async function client(
         status: axiosError.response?.status,
         message: axiosError.message,
       });
-
-      // Handle 401 Unauthorized - clear session and redirect to login
-      if (axiosError.response?.status === 401) {
-        sessionStorage.clear();
-        window.location.href = '/';
-      }
 
       throw axiosError;
     }
@@ -78,14 +72,14 @@ export async function fetchSSE(
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'Unable to read error body');
-      
+
       Logger.error('SSE request failed', {
         endpoint,
         status: response.status,
         statusText: response.statusText,
         body: errorBody,
       });
-      
+
       throw new Error(
         `SSE request failed: ${response.status} ${response.statusText} - ${errorBody}`
       );
