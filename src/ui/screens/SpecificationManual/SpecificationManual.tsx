@@ -100,7 +100,7 @@ export function SpecificationManual() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      <Header userName={userName} userRole="Contractor" />
+      <Header userName={userName} userRole="User" />
 
       <main className="mx-auto max-w-[588px] px-6 py-8">
         <button

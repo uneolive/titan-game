@@ -5,6 +5,7 @@ import { PDFViewer } from '@/ui/reusables/PDFViewer/PDFViewer.tsx';
 import { ProgressLoader } from '@/ui/reusables/ProgressLoader/ProgressLoader.tsx';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import { useUserName, useUserRole } from '@/helpers/utilities/useUser.ts';
+import { formatDateToLocal } from '@/helpers/utilities/formatters.ts';
 import { FiArrowLeft, FiPlus, FiFileText } from 'react-icons/fi';
 
 export function ProjectDetail() {
@@ -308,13 +309,7 @@ export function ProjectDetail() {
                         </td>
                         <td className="px-7 py-[7.4px]">
                           <span className="text-[12.3px] font-normal leading-[17.5px] text-[#6B7280]">
-                            {new Date(doc.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {formatDateToLocal(doc.date)}
                           </span>
                         </td>
                         <td className="px-7 py-[7.4px] text-right">
@@ -431,13 +426,7 @@ export function ProjectDetail() {
                           </div>
                         </td>
                         <td className="px-7 py-4 text-[12.3px] font-normal leading-[17.5px] text-[#4A5565]">
-                          {new Date(submittal.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatDateToLocal(submittal.date)}
                         </td>
                       </tr>
                     ))}

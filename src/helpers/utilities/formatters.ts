@@ -82,3 +82,58 @@ export function getStatusIcon(status: string): string {
       return 'FiCircle';
   }
 }
+
+/**
+ * Convert UTC date string to local date and time
+ * @param utcDateString - UTC date string (e.g., "2026-03-03T13:23:09.624507")
+ * @returns Formatted local date and time string (e.g., "Mar 3, 2026, 6:53 PM")
+ */
+export function formatDateToLocal(utcDateString: string): string {
+  try {
+    const date = new Date(utcDateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return utcDateString; // Return original if invalid
+    }
+
+    // Format: "Mar 3, 2026, 6:53 PM"
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return utcDateString; // Return original on error
+  }
+}
+
+/**
+ * Convert UTC date string to local date only (no time)
+ * @param utcDateString - UTC date string (e.g., "2026-03-03T13:23:09.624507")
+ * @returns Formatted local date string (e.g., "Mar 3, 2026")
+ */
+export function formatDateOnly(utcDateString: string): string {
+  try {
+    const date = new Date(utcDateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return utcDateString; // Return original if invalid
+    }
+
+    // Format: "Mar 3, 2026"
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return utcDateString; // Return original on error
+  }
+}

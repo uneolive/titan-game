@@ -1,8 +1,4 @@
-// MOCK: Import mock client for testing without backend
-import { mockClient as client } from '@/client/mockClient.ts';
-// REAL: Uncomment below line when backend is ready
-// import { client } from '@/client/client.ts';
-
+import { client } from '@/client/client.ts';
 import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
 import {
   serviceFailureResponse,

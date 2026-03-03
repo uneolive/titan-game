@@ -17,11 +17,27 @@ export function Header({ userName, userRole = 'User' }: HeaderProps) {
     navigate('/');
   };
 
+  const handleLogoClick = () => {
+    navigate('/projects');
+  };
+
   return (
     <header className="border-b border-gray-200 bg-white px-7 py-3">
       <div className="flex items-center justify-between">
         {/* Logo and Title */}
-        <div className="flex items-center gap-3">
+        <div
+          className="flex cursor-pointer items-center gap-3 transition-opacity hover:opacity-80"
+          onClick={handleLogoClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleLogoClick();
+            }
+          }}
+          aria-label="Go to Projects"
+        >
           <div className="flex h-[31.5px] w-[31.5px] items-center justify-center rounded-[3.5px] border border-gray-200 bg-white">
             <img src={logoSvg} alt="Submittal Assistant Logo" className="h-[21.4px] w-[21.4px]" />
           </div>
