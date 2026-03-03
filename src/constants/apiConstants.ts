@@ -1,4 +1,14 @@
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Decode Base64 encoded API URL for security
+const decodeBase64 = (encoded: string): string => {
+  try {
+    return atob(encoded);
+  } catch {
+    return encoded;
+  }
+};
+
+const encodedUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+export const BASE_URL = encodedUrl.includes('http') ? encodedUrl : decodeBase64(encodedUrl);
 
 export const ENDPOINTS = {
   LOGIN: '/api/auth/login',
