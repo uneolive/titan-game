@@ -331,7 +331,7 @@ export function AIResult() {
                                 onClick={() => handleViewSpecDocument(finding.specReference.s3Url)}
                                 className="cursor-pointer text-[10.5px] leading-[14px] text-[#3B82F6] underline"
                               >
-                                Section 16500, Part 2.3
+                                Section {resultData.specSection}
                               </button>
                             )}
                           </div>

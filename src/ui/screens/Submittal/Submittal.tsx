@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSubmittal } from './Submittal.vm.ts';
 import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { ProgressLoader } from '@/ui/reusables/ProgressLoader/ProgressLoader.tsx';
-import { FiX, FiFileText, FiLayers, FiAlignLeft } from 'react-icons/fi';
+import { FiX, FiFileText, FiLayers, FiAlignLeft, FiArrowLeft } from 'react-icons/fi';
 import uploadIcon from '@/assets/images/upload-icon.svg';
 
 export function Submittal() {
@@ -27,6 +27,7 @@ export function Submittal() {
     handleRemoveFile,
     handleSubmit,
     handleContinueInBackground,
+    navigateBack,
   } = useSubmittal(projectId!);
 
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -148,6 +149,14 @@ export function Submittal() {
       </div>
 
       <main className="mx-auto max-w-[784px] px-6 py-8">
+        <button
+          onClick={navigateBack}
+          className="mb-6 flex items-center gap-2 text-sm font-medium text-[#4A5565] transition-colors hover:text-gray-900"
+        >
+          <FiArrowLeft size={17.5} />
+          Back to Projects
+        </button>
+
         <div className="mb-6 text-center">
           <h1 className="mb-2 text-[24px] font-semibold tracking-[-0.48px] text-[#101828]">
             Submittal Entry

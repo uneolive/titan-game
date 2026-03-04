@@ -300,7 +300,7 @@ export function SpecificationManual() {
                             {selectedDivisions.includes('15') && (
                               <div className="flex items-center gap-1 rounded-[8px] bg-[#3B82F6] px-2 py-1">
                                 <span className="text-[10.5px] font-medium text-white">
-                                  15 – Mechanical
+                                  Mechanical
                                 </span>
                                 {isDivisionSelectable('15') && (
                                   <button
@@ -319,7 +319,7 @@ export function SpecificationManual() {
                             {selectedDivisions.includes('16') && (
                               <div className="flex items-center gap-1 rounded-[8px] bg-[#3B82F6] px-2 py-1">
                                 <span className="text-[10.5px] font-medium text-white">
-                                  16 – Electrical
+                                  Electrical
                                 </span>
                                 {isDivisionSelectable('16') && (
                                   <button
@@ -360,7 +360,7 @@ export function SpecificationManual() {
                           <span
                             className={`text-[12.3px] ${!isDivisionSelectable('15') ? 'text-[#9CA3AF]' : 'text-[#111827]'}`}
                           >
-                            15 - Mechanical {!isDivisionSelectable('15') && '(Already uploaded)'}
+                            Mechanical {!isDivisionSelectable('15') && '(Already uploaded)'}
                           </span>
                         </label>
                         <label className="flex cursor-pointer items-center gap-3">
@@ -374,7 +374,7 @@ export function SpecificationManual() {
                           <span
                             className={`text-[12.3px] ${!isDivisionSelectable('16') ? 'text-[#9CA3AF]' : 'text-[#111827]'}`}
                           >
-                            16 - Electrical {!isDivisionSelectable('16') && '(Already uploaded)'}
+                            Electrical {!isDivisionSelectable('16') && '(Already uploaded)'}
                           </span>
                         </label>
                       </div>
@@ -393,7 +393,7 @@ export function SpecificationManual() {
                             <p className="text-[12.3px] font-medium text-[#111827]">
                               {existingMechanicalDoc.documentName}
                             </p>
-                            <p className="text-[10.5px] text-[#6B7280]">15 - Mechanical</p>
+                            <p className="text-[10.5px] text-[#6B7280]">Mechanical</p>
                           </div>
                         )}
                         {hasElectricalDoc() && existingElectricalDoc && (
@@ -401,7 +401,7 @@ export function SpecificationManual() {
                             <p className="text-[12.3px] font-medium text-[#111827]">
                               {existingElectricalDoc.documentName}
                             </p>
-                            <p className="text-[10.5px] text-[#6B7280]">16 - Electrical</p>
+                            <p className="text-[10.5px] text-[#6B7280]">Electrical</p>
                           </div>
                         )}
                       </div>
@@ -415,7 +415,7 @@ export function SpecificationManual() {
                       <div>
                         <label className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]">
                           <FiFileText size={14} className="text-[#6B7280]" />
-                          15 - Mechanical Division
+                          Mechanical Division
                         </label>
                         {isMechanicalUploadDisabled() ? (
                           <div className="rounded-[12px] border-2 border-[#E5E7EB] bg-[#F9FAFB] p-6">
@@ -475,7 +475,7 @@ export function SpecificationManual() {
                       <div>
                         <label className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]">
                           <FiFileText size={14} className="text-[#6B7280]" />
-                          16 - Electrical Division
+                          Electrical Division
                         </label>
                         {isElectricalUploadDisabled() ? (
                           <div className="rounded-[12px] border-2 border-[#E5E7EB] bg-[#F9FAFB] p-6">
