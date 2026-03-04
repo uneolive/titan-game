@@ -89,7 +89,7 @@ export function ProgressLoader({ isOpen, progressData, onClose }: ProgressLoader
         </p>
 
         {/* Steps List */}
-        <div className="absolute left-[42px] right-[42px] top-[283.49px] h-[168px] rounded-[12px] bg-[#F9FAFB] p-[21px]">
+        <div className="absolute left-[42px] right-[42px] top-[283.49px] h-[168px] overflow-y-auto rounded-[12px] bg-[#F9FAFB] p-[21px]">
           {progressData.steps.map((step) => (
             <div
               key={step.stepIndex}
