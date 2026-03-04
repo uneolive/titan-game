@@ -77,14 +77,14 @@ export function Projects() {
           </div>
         ) : (
           /* Projects Table */
-          <div className="overflow-hidden rounded-[10px] border border-gray-200 bg-white">
+          <div className="max-h-[600px] overflow-y-auto overflow-x-hidden rounded-[10px] border border-gray-200 bg-white">
             <table className="w-full table-fixed">
               <colgroup>
                 <col style={{ width: '50%' }} />
                 <col style={{ width: '30%' }} />
                 <col style={{ width: '20%' }} />
               </colgroup>
-              <thead className="bg-gray-50">
+              <thead className="sticky top-0 bg-gray-50">
                 <tr className="border-b border-gray-200">
                   <th
                     className="cursor-pointer px-5 py-3 text-left"

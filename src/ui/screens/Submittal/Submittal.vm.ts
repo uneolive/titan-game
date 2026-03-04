@@ -285,7 +285,7 @@ export function useSubmittal(projectId: string) {
   }, [navigate]);
 
   const navigateBack = useCallback(() => {
-    navigate(`/projects/${projectId}`);
+    navigate(`/projects/${projectId}#submittals`);
   }, [projectId, navigate]);
 
   // Check if form is valid for submission
