@@ -1,65 +1,66 @@
-import { client, fetchSSE } from '@/client/client.ts';
+import { client, fetchSSE } from '@/client/mockClient.ts';
 import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
 import { ServiceResult } from '@/types/common/ServiceResult.ts';
-import {
-  serviceFailureResponse,
-  mapResponseCodeToServiceResult,
-} from '@/helpers/utilities/serviceHelpers.ts';
-import { BASE_URL, ENDPOINTS, HTTP_METHOD } from '@/constants/apiConstants.ts';
-import Logger from '@/helpers/utilities/Logger.ts';
-import { SpecSectionsResponseDTO, SpecSectionsDataDTO } from './types/SpecSectionsResponseDTO.ts';
+import { ServiceResultStatusENUM } from '@/types/enums/ServiceResultStatusENUM.ts';
+import { SpecSectionsDataDTO, SpecSectionsResponseDTO } from './types/SpecSectionsResponseDTO.ts';
 
-/**
- * Get specification sections for a project
- */
+function toServiceResult<T>(payload: {
+  code?: number;
+  data?: T | null;
+  message?: string;
+}): ServiceResult<T> {
+  const code = payload.code ?? ServiceResultStatusENUM.ERROR;
+
+  if (code === 200) {
+    return {
+      data: payload.data ?? null,
+      message: payload.message ?? 'Success',
+      statusCode: ServiceResultStatusENUM.SUCCESS,
+    };
+  }
+
+  if (code === 400 || code === 422) {
+    return {
+      data: null,
+      message: payload.message ?? 'Validation error',
+      statusCode: ServiceResultStatusENUM.VALIDATION_ERROR,
+    };
+  }
+
+  return {
+    data: null,
+    message: payload.message ?? 'Request failed',
+    statusCode: ServiceResultStatusENUM.ERROR,
+  };
+}
+
 export async function getSpecificationSections(
   projectId: string
 ): Promise<ServiceResult<SpecSectionsDataDTO>> {
   try {
-    const endpoint = `${BASE_URL}${ENDPOINTS.PROJECT_SECTIONS.replace(':projectId', projectId)}`;
-    const response = await client(endpoint, null, HTTP_METHOD.GET);
-
+    const response = await client(`/api/projects/${projectId}/sections`, null, 'GET');
     const camelCaseData = convertKeysToCamelCase<SpecSectionsResponseDTO>(response.data);
 
-    return mapResponseCodeToServiceResult<SpecSectionsDataDTO>(
-      camelCaseData.code,
-      camelCaseData.data,
-      camelCaseData.message,
-      response
-    );
-  } catch (error) {
-    Logger.error('Service exception in getSpecificationSections', {
-      projectId,
-      error: error instanceof Error ? error.message : 'Unknown error',
+    return toServiceResult<SpecSectionsDataDTO>({
+      code: camelCaseData.code,
+      data: camelCaseData.data,
+      message: camelCaseData.message,
     });
-    return serviceFailureResponse<SpecSectionsDataDTO>(
-      null,
-      'Failed to load specification sections'
-    );
+  } catch {
+    return {
+      data: null,
+      message: 'Failed to load specification sections',
+      statusCode: ServiceResultStatusENUM.ERROR,
+    };
   }
 }
 
-/**
- * Upload submittal and return SSE stream
- * @param formData - FormData containing submittal information and files
- * @param signal - Optional AbortSignal for cancellation support
- * @returns Promise<Response> - SSE stream response
- */
 export async function uploadSubmittal(formData: FormData, signal?: AbortSignal): Promise<Response> {
-  try {
-    const endpoint = `${BASE_URL}${ENDPOINTS.SUBMITTAL_ASSISTANT}`;
-    const response = await fetchSSE(endpoint, formData, signal);
+  const response = await fetchSSE('/api/submittal-assistant', formData, signal);
 
-    // Validate response before returning
-    if (!response.ok) {
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
-    }
-
-    return response;
-  } catch (error) {
-    Logger.error('Service exception in uploadSubmittal', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    throw error;
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
   }
+
+  return response;
 }

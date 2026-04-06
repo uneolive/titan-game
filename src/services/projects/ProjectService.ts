@@ -1,43 +1,62 @@
-import { client } from '@/client/client.ts';
-import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
-import { adaptApiResponse, serviceFailureResponse } from '@/helpers/utilities/serviceHelpers.ts';
-import Logger from '@/helpers/utilities/Logger.ts';
 import { ServiceResult } from '@/types/common/ServiceResult.ts';
-import { BASE_URL, ENDPOINTS, HTTP_METHOD } from '@/constants/apiConstants.ts';
-import { ProjectsListResponseDTO, ProjectsListDataDTO } from './types/ProjectsListResponseDTO.ts';
+import { ServiceResultStatusENUM } from '@/types/enums/ServiceResultStatusENUM.ts';
+import { ProjectsListDataDTO } from './types/ProjectsListResponseDTO.ts';
 
-/**
- * Get list of all projects with optional sorting
- * SEQ: 1.23 - Define async function getProjects(sortBy, sortOrder)
- */
+const seededProjects: ProjectsListDataDTO['projects'] = [
+  {
+    projectId: '101',
+    projectName: 'Downtown Office Tower',
+    projectType: 'Construction',
+    submittalsCount: 2,
+  },
+  {
+    projectId: '102',
+    projectName: 'Riverside Medical Center',
+    projectType: 'Engineering',
+    submittalsCount: 1,
+  },
+  {
+    projectId: '103',
+    projectName: 'Harbor Point Residences',
+    projectType: 'Architecture',
+    submittalsCount: 2,
+  },
+  {
+    projectId: '104',
+    projectName: 'North Valley Data Center',
+    projectType: 'Construction',
+    submittalsCount: 3,
+  },
+];
+
 export async function getProjects(
   sortBy: string = 'project_name',
   sortOrder: string = 'asc'
 ): Promise<ServiceResult<ProjectsListDataDTO>> {
-  try {
-    // Use URLSearchParams to safely build query string
-    const params = new URLSearchParams({
-      sort_by: sortBy,
-      sort_order: sortOrder,
-    });
-    const endpoint = `${BASE_URL}${ENDPOINTS.PROJECTS}?${params.toString()}`;
+  const direction = sortOrder === 'desc' ? -1 : 1;
 
-    // SEQ: 1.27 - Call client with fullEndpoint, null body, HTTP_METHOD.GET
-    const response = await client(endpoint, null, HTTP_METHOD.GET);
+  const projects = [...seededProjects].sort((left, right) => {
+    const leftValue =
+      sortBy === 'project_type'
+        ? left.projectType
+        : sortBy === 'submittals_count'
+          ? left.submittalsCount
+          : left.projectName;
+    const rightValue =
+      sortBy === 'project_type'
+        ? right.projectType
+        : sortBy === 'submittals_count'
+          ? right.submittalsCount
+          : right.projectName;
 
-    // SEQ: 1.36 - Call convertKeysToCamelCase with response.data
-    const camelCaseData = convertKeysToCamelCase<ProjectsListResponseDTO>(response.data);
+    if (leftValue < rightValue) return -1 * direction;
+    if (leftValue > rightValue) return 1 * direction;
+    return 0;
+  });
 
-    return adaptApiResponse<ProjectsListDataDTO>({ ...response, data: camelCaseData });
-  } catch (error) {
-    Logger.error('Failed to fetch projects', {
-      sortBy,
-      sortOrder,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    });
-    return serviceFailureResponse<ProjectsListDataDTO>(
-      null,
-      'Failed to fetch projects. Please try again.'
-    );
-  }
+  return {
+    data: { projects },
+    message: 'Success',
+    statusCode: ServiceResultStatusENUM.SUCCESS,
+  };
 }

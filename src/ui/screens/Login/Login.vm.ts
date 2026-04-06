@@ -1,17 +1,5 @@
-// SEQ: 1.3 - Import useState, useId from react
 import { useState, useCallback } from 'react';
-// SEQ: 1.4 - Import useNavigate from react-router-dom
 import { useNavigate } from 'react-router-dom';
-// SEQ: 1.5 - Import login from AuthService
-import { login } from '@/services/login/AuthService.ts';
-// SEQ: 1.6 - Import isValidEmail from emailValidator
-import { isValidEmail } from '@/helpers/validators/emailValidator.ts';
-// SEQ: 1.7 - Import isValidPassword from passwordValidator
-import { isValidPassword } from '@/helpers/validators/passwordValidator.ts';
-import { ServiceResultStatusENUM } from '@/types/enums/ServiceResultStatusENUM.ts';
-// SEQ: 1.8 - Import UserBO from types
-import { UserBO } from '@/types/bos/login/UserBO.ts';
-import Logger from '@/helpers/utilities/Logger.ts';
 
 export function useLogin() {
   const navigate = useNavigate();
@@ -43,8 +31,7 @@ export function useLogin() {
   }, []);
 
   const validateEmail = useCallback((): boolean => {
-    // SEQ: 5.6 - Call isValidEmail(email)
-    if (!isValidEmail(email)) {
+    if (!email.includes('@')) {
       setEmailError('Please enter a valid email address');
       return false;
     }
@@ -52,8 +39,7 @@ export function useLogin() {
   }, [email]);
 
   const validatePassword = useCallback((): boolean => {
-    // SEQ: 5.8 - Call isValidPassword(password)
-    if (!isValidPassword(password)) {
+    if (password.length < 6) {
       setPasswordError('Password must be at least 6 characters');
       return false;
     }
@@ -77,25 +63,17 @@ export function useLogin() {
       setIsLoading(true);
       setError(null);
 
-      // SEQ: 6.4 - Call login(email, password)
-      const result = await login(email, password);
-
-      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-        const userData: UserBO = result.data.user;
-        sessionStorage.setItem('user', JSON.stringify(userData));
-        // SEQ: 6.33 - Call navigate to /projects route
-        navigate('/projects');
-      } else if (result.statusCode === ServiceResultStatusENUM.UNAUTHORIZED) {
-        setError('Invalid email or password');
-      } else if (result.statusCode === ServiceResultStatusENUM.VALIDATION_ERROR) {
-        setError('Please check your input and try again');
-      } else {
-        setError(result.message || 'Login failed. Please try again.');
-      }
+      sessionStorage.setItem(
+        'user',
+        JSON.stringify({
+          userId: 'mock-user-1',
+          email,
+          firstName: 'Demo',
+          lastName: 'User',
+        })
+      );
+      navigate('/projects');
     } catch (error) {
-      Logger.error('Unexpected error in handleLogin', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);

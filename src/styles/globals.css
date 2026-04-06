@@ -31,6 +31,101 @@
 }
 
 @layer components {
+  .btn-ds-base {
+    @apply inline-flex items-center justify-center gap-1 overflow-hidden px-4 text-[14px] font-normal leading-none transition-colors focus:outline-none disabled:cursor-not-allowed;
+    border-radius: 4px;
+  }
+
+  .btn-ds-primary-md {
+    @apply btn-ds-base h-10 text-white disabled:opacity-50;
+    background-color: #4485f1;
+  }
+
+  .btn-ds-primary-md:hover {
+    background-color: #2c6de7;
+  }
+
+  .btn-ds-primary-md:focus-visible {
+    background-color: #396fc8;
+  }
+
+  .btn-ds-primary-sm {
+    @apply btn-ds-base h-[30px] text-white disabled:opacity-50;
+    background-color: #4485f1;
+  }
+
+  .btn-ds-primary-sm:hover {
+    background-color: #2c6de7;
+  }
+
+  .btn-ds-primary-sm:focus-visible {
+    background-color: #396fc8;
+  }
+
+  .btn-ds-secondary-md {
+    @apply btn-ds-base h-10 border disabled:opacity-100;
+    background-color: #f6f6f6;
+    border-color: #d2d2d2;
+    color: #2a2a2a;
+  }
+
+  .btn-ds-secondary-md:hover {
+    background-color: #e4e4e4;
+  }
+
+  .btn-ds-secondary-md:focus-visible {
+    background-color: #f6f6f6;
+  }
+
+  .btn-ds-secondary-md:disabled {
+    color: #909090;
+  }
+
+  .btn-ds-secondary-sm {
+    @apply btn-ds-base h-[30px] border disabled:opacity-100;
+    background-color: #f6f6f6;
+    border-color: #d2d2d2;
+    color: #2a2a2a;
+  }
+
+  .btn-ds-secondary-sm:hover {
+    background-color: #e4e4e4;
+  }
+
+  .btn-ds-secondary-sm:focus-visible {
+    background-color: #f6f6f6;
+  }
+
+  .btn-ds-secondary-sm:disabled {
+    color: #909090;
+  }
+
+  .btn-ds-destructive-sm {
+    @apply btn-ds-base h-[30px] text-white disabled:opacity-50;
+    background-color: #df1616;
+  }
+
+  .btn-ds-destructive-sm:hover {
+    background-color: #c0141e;
+  }
+
+  .btn-ds-destructive-sm:focus-visible {
+    background-color: #9c0f0f;
+  }
+
+  .btn-ds-destructive-md {
+    @apply btn-ds-base h-10 text-white disabled:opacity-50;
+    background-color: #df1616;
+  }
+
+  .btn-ds-destructive-md:hover {
+    background-color: #c0141e;
+  }
+
+  .btn-ds-destructive-md:focus-visible {
+    background-color: #9c0f0f;
+  }
+
   .btn-primary {
     @apply rounded-lg bg-primary px-4 py-2 font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none;
   }
@@ -46,4 +141,5 @@
   .card {
     @apply rounded-lg bg-white p-6 shadow-md;
   }
+
 }

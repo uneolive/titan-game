@@ -10,7 +10,14 @@ import { isValidPDF } from '@/helpers/validators/fileValidator.ts';
 import { isValidProjectName, isValidProjectType } from '@/helpers/validators/projectValidator.ts';
 import Logger from '@/helpers/utilities/Logger.ts';
 
-export function useSpecificationManual(projectId: string) {
+interface UseSpecificationManualOptions {
+  onSuccess?: (projectId: string) => void;
+}
+
+export function useSpecificationManual(
+  projectId: string,
+  { onSuccess }: UseSpecificationManualOptions = {}
+) {
   const navigate = useNavigate();
   const isNewProject = projectId === '0';
 
@@ -298,7 +305,11 @@ export function useSpecificationManual(projectId: string) {
 
       if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
         const newProjectId = result.data.projectId;
-        navigate(`/projects/${newProjectId}/submittal`);
+        if (onSuccess) {
+          onSuccess(newProjectId);
+        } else {
+          navigate(`/projects/${newProjectId}/submittal`);
+        }
       } else if (result.statusCode === ServiceResultStatusENUM.VALIDATION_ERROR) {
         setError(result.message);
       } else {
@@ -323,6 +334,7 @@ export function useSpecificationManual(projectId: string) {
     mechanicalDivisionFile,
     electricalDivisionFile,
     navigate,
+    onSuccess,
   ]);
 
   const navigateBack = useCallback(() => {

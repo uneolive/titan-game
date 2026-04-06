@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   PROJECT_SECTIONS: '/api/projects/:projectId/sections',
   SPEC_UPLOAD: '/api/spec-upload',
   SUBMITTAL_ASSISTANT: '/api/submittal-assistant',
+  SUBMITTAL: '/api/submittals/:submittalId',
   SUBMITTAL_PROGRESS: '/api/submittals/:submittalId/progress',
   SUBMITTAL_RESULT: '/api/submittals/:submittalId/result',
 } as const;

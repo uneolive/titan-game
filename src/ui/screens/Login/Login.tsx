@@ -25,9 +25,8 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F6F6F6] px-4">
       <div className="w-full max-w-[392px]">
-        {/* Logo Section - Horizontally Centered */}
         <div className="mb-6 flex items-center justify-center gap-4">
           <div className="flex h-14 w-14 items-center justify-center rounded-[10px] border border-gray-200 bg-white shadow-sm">
             <img src={logoSvg} alt="Submittal Assistant Logo" className="h-[35.4px] w-[35.4px]" />
@@ -38,9 +37,7 @@ export function Login() {
           </div>
         </div>
 
-        {/* Login Card */}
         <div className="rounded-[10px] border border-gray-200 bg-white p-7 shadow-sm">
-          {/* Card Header */}
           <div className="mb-7 text-center">
             <h2 className="text-xl font-semibold leading-6 tracking-[-0.4px] text-gray-900">
               Login
@@ -48,16 +45,13 @@ export function Login() {
             <p className="mt-2 text-sm leading-[21px] text-gray-500">Sign in to your account</p>
           </div>
 
-          {/* Error Message */}
           {error && (
             <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-error" role="alert">
               {error}
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit} aria-label="User login form">
-            {/* Email Input */}
             <div className="mb-[21px]">
               <label
                 htmlFor="email"
@@ -91,7 +85,6 @@ export function Login() {
               )}
             </div>
 
-            {/* Password Input */}
             <div className="mb-[21px]">
               <label
                 htmlFor="password"
@@ -133,7 +126,6 @@ export function Login() {
               )}
             </div>
 
-            {/* Login Button */}
             <button
               type="submit"
               className="h-[38.5px] w-full rounded-lg bg-primary text-xs font-medium leading-[17.5px] text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
 
 interface PDFViewerProps {
@@ -8,56 +9,64 @@ interface PDFViewerProps {
 }
 
 export function PDFViewer({ isOpen, s3Url, documentName, onClose }: PDFViewerProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black bg-opacity-25 transition-opacity"
+        className="fixed inset-0 z-50 flex items-stretch justify-center bg-[#101828]/45 p-4"
         onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Side Panel */}
-      <div
-        className="fixed right-0 top-0 z-50 h-screen w-[700px] overflow-hidden bg-white shadow-[0px_25px_50px_-12px_rgba(0,0,0,0.25)] transition-transform duration-300 ease-in-out"
-        style={{ borderLeft: '1.6px solid #E5E7EB' }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="pdf-viewer-title"
       >
-        {/* Header */}
         <div
-          className="flex h-[71.6px] items-center justify-between bg-[#F4F6F9] px-[21px]"
-          style={{ borderBottom: '1.6px solid #E5E7EB' }}
+          className="relative flex h-[calc(100dvh-32px)] w-full max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+          onClick={(event) => event.stopPropagation()}
         >
-          <div>
-            <h2
-              id="pdf-viewer-title"
-              className="text-[15.8px] font-semibold leading-[24.5px] text-[#101828]"
+          <div className="shrink-0 border-b border-[#EEEEEE] bg-white px-6 py-6">
+            <div>
+              <h2
+                id="pdf-viewer-title"
+                className="text-[24px] font-semibold tracking-[-0.48px] text-[#101828]"
+              >
+                Specification Manual
+              </h2>
+              <p className="mt-1 text-[14px] leading-5 text-[#4A5565]">{documentName}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="absolute right-6 top-6 inline-flex h-4 w-4 items-center justify-center text-[#2A2A2A] transition-opacity hover:opacity-70"
+              aria-label="Close PDF viewer"
             >
-              Specification Document
-            </h2>
-            <p className="text-[12.3px] font-normal leading-[17.5px] text-[#4A5565]">
-              {documentName}
-            </p>
+              <FiX size={16} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-[17.5px] w-[17.5px] items-center justify-center text-[#6B7280] transition-colors hover:text-[#0F172A]"
-            aria-label="Close PDF viewer"
-          >
-            <FiX size={17.5} />
-          </button>
-        </div>
 
-        {/* PDF Content Area */}
-        <div className="h-[calc(100%-71.6px)] overflow-auto bg-[#F3F4F6] p-[21px]">
-          <div className="rounded-[10px] bg-white shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.1),0px_2px_4px_-2px_rgba(0,0,0,0.1)]">
+          <div className="min-h-0 flex-1 overflow-auto bg-white">
             <iframe
               src={s3Url}
-              className="h-[calc(100vh-150px)] w-full rounded-[10px]"
+              className="h-full min-h-[400px] w-full"
               title={documentName}
             />
           </div>

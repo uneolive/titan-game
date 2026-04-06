@@ -1,0 +1,69 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1189 >>
+stream
+BT
+/F1 17 Tf
+72 742 Td
+(SUBMITTAL PACKAGE - VARIABLE AIR VOLUME BOXES) Tj
+0 -22 Td
+/F1 11 Tf
+(Project: Downtown Office Tower / North Valley Data Center) Tj
+0 -14 Td
+(Specification Section: 23 36 00 Air Terminal Units) Tj
+0 -20 Td
+(1. PRODUCT DATA) Tj
+0 -14 Td
+(A. Single-duct pressure-independent VAV boxes with galvanized steel casing.) Tj
+0 -14 Td
+(B. Submitted insulation thickness: 1/2 inch fiberglass liner.) Tj
+0 -14 Td
+(C. BACnet MS/TP actuator included.) Tj
+0 -20 Td
+(2. PERFORMANCE DATA) Tj
+0 -14 Td
+(A. Airflow range shown on schedule.) Tj
+0 -14 Td
+(B. Sound power data attached for octave bands.) Tj
+0 -14 Td
+(C. Leakage class not clearly stated in the manufacturer literature.) Tj
+0 -20 Td
+(3. ACCESSORIES) Tj
+0 -14 Td
+(A. Hot-water reheat coil where scheduled.) Tj
+0 -14 Td
+(B. Access door and pressure taps provided.) Tj
+0 -20 Td
+(4. REVIEW NOTES) Tj
+0 -14 Td
+(A. Package intentionally reflects a mixed-compliance mechanical submission for local AI testing.) Tj
+0 -14 Td
+(B. Primary gaps are insulation thickness and documented casing leakage performance.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000063 00000 n 
+0000000122 00000 n 
+0000000248 00000 n 
+0000000318 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1557
+%%EOF

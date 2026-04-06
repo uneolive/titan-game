@@ -3,11 +3,25 @@ import { useState, useRef, useEffect } from 'react';
 import { useSubmittal } from './Submittal.vm.ts';
 import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { ProgressLoader } from '@/ui/reusables/ProgressLoader/ProgressLoader.tsx';
+import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import { FiX, FiFileText, FiLayers, FiAlignLeft, FiArrowLeft } from 'react-icons/fi';
 import uploadIcon from '@/assets/images/upload-icon.svg';
 
-export function Submittal() {
+interface SubmittalProps {
+  modalMode?: boolean;
+  onClose?: () => void;
+  projectIdOverride?: string;
+  onComplete?: (submittalId: string) => void;
+}
+
+export function Submittal({
+  modalMode = false,
+  onClose,
+  projectIdOverride,
+  onComplete,
+}: SubmittalProps = {}) {
   const { projectId } = useParams<{ projectId: string }>();
+  const resolvedProjectId = projectIdOverride ?? projectId ?? '';
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -28,7 +42,7 @@ export function Submittal() {
     handleSubmit,
     handleContinueInBackground,
     navigateBack,
-  } = useSubmittal(projectId!);
+  } = useSubmittal(resolvedProjectId, { onComplete });
 
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User';
@@ -100,12 +114,33 @@ export function Submittal() {
 
   const filteredGroupedSections = getFilteredGroupedSections();
   const hasResults = Object.keys(filteredGroupedSections).length > 0;
+  const handleClose = onClose ?? navigateBack;
 
-  return (
-    <div className="min-h-screen bg-white">
-      <Header userName={userName} userRole="User" />
+  useEffect(() => {
+    if (!modalMode) return;
 
-      {/* Progress Stepper */}
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [handleClose, modalMode]);
+
+  const content = (
+    <>
+      {!modalMode && <Header userName={userName} userRole="User" />}
+
+      {!modalMode && (
       <div className="border-b border-[#E5E7EB] bg-white px-6 py-[21px]">
         <div className="mx-auto flex max-w-[1000px] items-center justify-center">
           {/* Step 1 - Completed */}
@@ -147,8 +182,10 @@ export function Submittal() {
           <div className="mx-2 text-[12.3px] text-[#99A1AF]">AI Analysis</div>
         </div>
       </div>
+      )}
 
-      <main className="mx-auto max-w-[784px] px-6 py-8">
+      <main className={modalMode ? 'flex h-full min-h-0 flex-col' : 'mx-auto max-w-[784px] px-6 py-8'}>
+        {!modalMode && (
         <button
           onClick={navigateBack}
           className="mb-6 flex items-center gap-2 text-sm font-medium text-[#4A5565] transition-colors hover:text-gray-900"
@@ -156,20 +193,37 @@ export function Submittal() {
           <FiArrowLeft size={17.5} />
           Back to Projects
         </button>
+        )}
 
-        <div className="mb-6 text-center">
+        <div className={modalMode ? 'shrink-0 border-b border-[#EEEEEE] bg-white px-6 py-6' : 'mb-6 text-center'}>
           <h1 className="mb-2 text-[24px] font-semibold tracking-[-0.48px] text-[#101828]">
-            Submittal Entry
+            {modalMode ? 'New Submittal Analysis' : 'Submittal Entry'}
           </h1>
           <p className="text-[14px] text-[#4A5565]">
             Enter the submittal details and upload the document for AI analysis
           </p>
         </div>
 
-        <div className="rounded-[14px] bg-white p-7 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]">
+        <div className={modalMode ? 'min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6' : ''}>
+        {modalMode && isAnalyzing ? (
+          <div className="flex min-h-full items-center justify-center rounded-[4px] border border-[#EEEEEE] bg-white px-6 py-6">
+            <div className="flex max-w-[360px] flex-col items-center gap-4 text-center">
+              <Spinner size="lg" color="#1976D2" />
+              <div className="space-y-2">
+                <h2 className="text-[18px] font-semibold leading-6 text-[#101828]">
+                  Analyzing submittal
+                </h2>
+                <p className="text-[14px] leading-[21px] text-[#4A5565]">
+                  The AI analysis is running. Results will replace this view in the same modal once processing completes.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+        <div className={modalMode ? 'rounded-[4px] border border-[#EEEEEE] bg-white px-6 py-6' : 'rounded-[14px] bg-white p-7 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]'}>
           {errors.general && (
             <div
-              className="mb-6 rounded-[8px] bg-[#FEF2F2] p-4 text-[12.3px] text-[#F44336]"
+              className={`mb-6 ${modalMode ? 'rounded-[4px]' : 'rounded-[8px]'} bg-[#FEF2F2] p-4 text-[12.3px] text-[#F44336]`}
               role="alert"
             >
               {errors.general}
@@ -259,7 +313,9 @@ export function Submittal() {
                       </div>
                     ))
                   ) : (
-                    <div className="px-4 py-3 text-sm text-gray-600">No sections found</div>
+                    <div className="px-4 py-3 text-sm text-gray-600">
+                      No sections found in this project&apos;s specification manuals
+                    </div>
                   )}
                 </div>
               )}
@@ -339,27 +395,81 @@ export function Submittal() {
               {errors.files && <p className="mt-2 text-[12.3px] text-[#F44336]">{errors.files}</p>}
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] bg-[#3B82F6] text-[12.3px] font-medium text-white transition-colors hover:bg-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isAnalyzing || !isFormValid}
-            >
-              {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M5.25 10.5L8.75 7L5.25 3.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
+            {!modalMode && (
+              <button
+                type="submit"
+                className="btn-ds-primary-md w-full"
+                disabled={isAnalyzing || !isFormValid}
+              >
+                {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path
+                    d="M5.25 10.5L8.75 7L5.25 3.5"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            )}
           </form>
         </div>
-      </main>
+        )}
+        </div>
 
+        {modalMode && (
+          <div className="shrink-0 border-t border-[#EEEEEE] bg-white px-4 py-4">
+            <div className="flex items-center justify-end gap-4">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="btn-ds-secondary-sm"
+                disabled={isAnalyzing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="btn-ds-primary-sm"
+                disabled={isAnalyzing || !isFormValid}
+              >
+                {isAnalyzing ? 'Analyzing...' : 'Analyse'}
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+    </>
+  );
+
+  return (
+    <>
+    {modalMode ? (
+      <div
+        className="fixed inset-0 z-50 flex items-stretch justify-center bg-[#101828]/45 p-4"
+        onClick={handleClose}
+      >
+        <div
+          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-all duration-200"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute right-6 top-6 z-10 inline-flex h-4 w-4 items-center justify-center text-[#2A2A2A] transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label="Close new submittal modal"
+            disabled={isAnalyzing}
+          >
+            <FiX size={16} />
+          </button>
+          {content}
+        </div>
+      </div>
+    ) : (
+    <div className="min-h-screen bg-white">
+      {content}
       {/* Progress Loader */}
       {isAnalyzing && submittalId && (
         <ProgressLoader
@@ -378,5 +488,7 @@ export function Submittal() {
         />
       )}
     </div>
+    )}
+    </>
   );
 }

@@ -1,0 +1,83 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 1238 >>
+stream
+BT
+/F1 17 Tf
+72 742 Td
+(SECTION 23 36 00 - AIR TERMINAL UNITS) Tj
+0 -22 Td
+/F1 11 Tf
+(PART 1 - GENERAL) Tj
+0 -16 Td
+(1.01 SUMMARY) Tj
+0 -14 Td
+(A. Furnish variable air volume terminal units, fan-powered boxes, controls, and accessories.) Tj
+0 -14 Td
+(B. Coordinate unit types, sizes, and control sequences with air distribution schedules.) Tj
+0 -20 Td
+(1.02 SUBMITTALS) Tj
+0 -14 Td
+(A. Product data for casing construction, liners, valves, coils, and controls.) Tj
+0 -14 Td
+(B. Certified leakage and sound performance data at scheduled operating conditions.) Tj
+0 -14 Td
+(C. Wiring diagrams and BACnet integration points.) Tj
+0 -20 Td
+(PART 2 - PRODUCTS) Tj
+0 -16 Td
+(2.01 CASING) Tj
+0 -14 Td
+(A. Minimum 22-gauge galvanized steel with 1-inch dual-density insulation.) Tj
+0 -14 Td
+(B. Maximum leakage 2 percent at 6 inches w.g.) Tj
+0 -16 Td
+(2.02 CONTROLS) Tj
+0 -14 Td
+(A. Provide electronic actuator and BACnet MS/TP compatible controller.) Tj
+0 -14 Td
+(B. Factory mount differential pressure pickup and calibrated airflow sensor.) Tj
+0 -16 Td
+(2.03 ACCESSORIES) Tj
+0 -14 Td
+(A. Reheat coils where scheduled.) Tj
+0 -14 Td
+(B. Sound attenuating liner and access doors for service.) Tj
+0 -20 Td
+(PART 3 - EXECUTION) Tj
+0 -16 Td
+(3.01 INSTALLATION) Tj
+0 -14 Td
+(A. Support units independently from branch ducts and verify access for maintenance.) Tj
+0 -14 Td
+(B. Coordinate controls startup, balancing, and sequence verification.) Tj
+0 -20 Td
+(Mock note: used by seeded mechanical projects and AI review references in local development.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000063 00000 n 
+0000000122 00000 n 
+0000000248 00000 n 
+0000000318 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1606
+%%EOF

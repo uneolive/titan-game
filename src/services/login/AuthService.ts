@@ -1,4 +1,4 @@
-import { client } from '@/client/client.ts';
+import { client } from '@/client/mockClient.ts';
 import { convertKeysToCamelCase } from '@/helpers/utilities/caseConverter.ts';
 import { adaptApiResponse, serviceFailureResponse } from '@/helpers/utilities/serviceHelpers.ts';
 import Logger from '@/helpers/utilities/Logger.ts';

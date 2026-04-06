@@ -14,8 +14,13 @@ import { isValidPDF } from '@/helpers/validators/fileValidator.ts';
 import { isValidTitle, isValidSpecSection } from '@/helpers/validators/submittalValidator.ts';
 import Logger from '@/helpers/utilities/Logger.ts';
 
-export function useSubmittal(projectId: string) {
+interface UseSubmittalOptions {
+  onComplete?: (submittalId: string) => void;
+}
+
+export function useSubmittal(projectId: string, options: UseSubmittalOptions = {}) {
   const navigate = useNavigate();
+  const { onComplete } = options;
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
   const [formData, setFormData] = useState<SubmittalFormData>({
@@ -208,7 +213,11 @@ export function useSubmittal(projectId: string) {
                 setIsAnalyzing(false);
                 readerRef.current = null;
                 // SEQ: 9.45 - Call navigate to results
-                navigate(`/projects/${projectId}/submittal/${camelCaseData.submittalId}/results`);
+                if (onComplete) {
+                  onComplete(camelCaseData.submittalId);
+                } else {
+                  navigate(`/projects/${projectId}/submittal/${camelCaseData.submittalId}/results`);
+                }
               } else if (eventType === 'error') {
                 setIsAnalyzing(false);
                 setSteps(camelCaseData.steps || []);
@@ -234,7 +243,7 @@ export function useSubmittal(projectId: string) {
         readerRef.current = null;
       }
     },
-    [projectId, navigate]
+    [onComplete, projectId, navigate]
   );
 
   // SEQ: 8.2 - Call handleSubmit()

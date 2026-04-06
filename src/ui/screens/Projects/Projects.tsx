@@ -2,10 +2,10 @@ import { useProjects } from './Projects.vm.ts';
 import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import { useUserName, useUserRole } from '@/helpers/utilities/useUser.ts';
-import { FiPlus } from 'react-icons/fi';
 import sortIconSvg from '@/assets/images/sort-icon.svg';
 
 export function Projects() {
+  const projectsState = useProjects();
   const {
     projects,
     isLoading,
@@ -16,31 +16,20 @@ export function Projects() {
     handleSort,
     handleProjectClick,
     handleCreateNewProject,
-  } = useProjects();
+  } = projectsState;
 
   const userName = useUserName();
   const userRole = useUserRole();
 
-  // Type badge colors
-  const getTypeBadgeClass = (type: string) => {
-    switch (type.toLowerCase()) {
-      case 'architecture':
-        return 'bg-blue-100 text-blue-900 border-transparent';
-      case 'construction':
-        return 'bg-green-100 text-green-900 border-transparent';
-      case 'engineering':
-        return 'bg-yellow-100 text-yellow-900 border-transparent';
-      default:
-        return 'bg-gray-100 text-gray-900 border-transparent';
-    }
+  const getTypeBadgeClass = (_type: string) => {
+    return 'bg-[#F6F6F6] text-[#2A2A2A] border-transparent';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F6F6F6]">
       <Header userName={userName} userRole={userRole} />
 
       <main className="mx-auto max-w-[1120px] px-10 py-7">
-        {/* Page Header */}
         <div className="mb-7 flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold leading-[28.8px] tracking-[-0.48px] text-gray-900">
@@ -50,23 +39,17 @@ export function Projects() {
               Manage your project submittals and specifications
             </p>
           </div>
-          <button
-            onClick={handleCreateNewProject}
-            className="flex h-10 items-center gap-2 rounded-[10px] bg-primary px-4 text-sm font-medium leading-5 text-white transition-colors hover:bg-blue-700"
-          >
-            <FiPlus size={14} />
-            Create New Project
+          <button onClick={handleCreateNewProject} className="btn-ds-primary-sm">
+            New Project
           </button>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-error" role="alert">
             {error}
           </div>
         )}
 
-        {/* Initial Loading State - Just Spinner */}
         {isInitialLoad && isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Spinner size="lg" />
@@ -76,8 +59,7 @@ export function Projects() {
             <p className="text-gray-600">No projects found. Create your first project!</p>
           </div>
         ) : (
-          /* Projects Table */
-          <div className="max-h-[600px] overflow-y-auto overflow-x-hidden rounded-[10px] border border-gray-200 bg-white">
+          <div className="max-h-[600px] overflow-y-auto overflow-x-hidden rounded-[4px] border border-gray-200 bg-white">
             <table className="w-full table-fixed">
               <colgroup>
                 <col style={{ width: '50%' }} />
@@ -138,7 +120,6 @@ export function Projects() {
                 </tr>
               </thead>
               <tbody>
-                {/* Sort Loading State - Spinner in tbody */}
                 {!isInitialLoad && isLoading ? (
                   <tr>
                     <td colSpan={3} className="py-12 text-center">
@@ -155,19 +136,19 @@ export function Projects() {
                       className="cursor-pointer border-b border-gray-100 transition-colors last:border-b-0 hover:bg-gray-50"
                     >
                       <td className="px-5 py-4">
-                        <span className="text-sm font-medium leading-5 text-primary">
+                        <span className="text-sm font-medium leading-5 text-[#2A2A2A]">
                           {project.projectName}
                         </span>
                       </td>
                       <td className="px-3.5 py-4">
                         <span
-                          className={`inline-flex h-[25.59px] items-center rounded-md border px-2.5 text-xs font-medium leading-4 ${getTypeBadgeClass(project.projectType)}`}
+                          className={`inline-flex h-6 max-w-[200px] items-center overflow-hidden rounded-[4px] border px-[6px] text-[12px] font-normal leading-none ${getTypeBadgeClass(project.projectType)}`}
                         >
                           {project.projectType}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <span className="text-sm font-medium leading-5 text-gray-700">
+                        <span className="inline-flex h-6 min-w-6 items-center justify-center overflow-hidden rounded-[4px] border border-transparent bg-[#F6F6F6] px-[6px] text-[12px] font-normal leading-none text-[#2A2A2A]">
                           {project.submittalsCount || 0}
                         </span>
                       </td>

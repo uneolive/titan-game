@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getProjects } from '@/services/projects/ProjectService.ts';
 import { ProjectBO } from '@/types/bos/projects/ProjectBO.ts';
 import { ServiceResultStatusENUM } from '@/types/enums/ServiceResultStatusENUM.ts';
-import Logger from '@/helpers/utilities/Logger.ts';
 
 export function useProjects() {
   const navigate = useNavigate();
@@ -13,36 +12,31 @@ export function useProjects() {
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('project_name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
 
-  // SEQ: 1.18 - Call loadProjects()
   const loadProjects = useCallback(async () => {
     try {
-          setIsLoading(true);
-          setError(null);
+      setIsLoading(true);
+      setError(null);
 
-          // SEQ: 1.22 - Call getProjects(sortBy, sortOrder)
-          const result = await getProjects(sortBy, sortOrder);
+      const result = await getProjects(sortBy, sortOrder);
 
-          if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
-                    setProjects(result.data.projects);
+      if (result.statusCode === ServiceResultStatusENUM.SUCCESS && result.data) {
+        setProjects(result.data.projects);
       } else if (result.statusCode === ServiceResultStatusENUM.UNAUTHORIZED) {
-              sessionStorage.clear();
+        sessionStorage.clear();
         navigate('/');
       } else {
-              setError(result.message);
+        setError(result.message);
       }
-    } catch (error) {
-          Logger.error('Unexpected error in loadProjects', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+    } catch {
       setError('Failed to load projects. Please try again.');
     } finally {
-          setIsLoading(false);
+      setIsLoading(false);
       setIsInitialLoad(false);
     }
   }, [sortBy, sortOrder, navigate]);
 
-  // SEQ: 1.17 - useEffect with dependencies [sortBy, sortOrder]
   useEffect(() => {
     loadProjects();
   }, [loadProjects]);
@@ -56,15 +50,28 @@ export function useProjects() {
   // SEQ: 3.2 - Call handleProjectClick(projectId)
   const handleProjectClick = useCallback(
     (projectId: string) => {
-          navigate(`/projects/${projectId}`);
+      navigate(`/projects/${projectId}`);
     },
     [navigate]
   );
 
   // SEQ: 4.2 - Call handleCreateNewProject()
   const handleCreateNewProject = useCallback(() => {
-      navigate('/projects/0/spec-manual');
-  }, [navigate]);
+      setIsCreateProjectModalOpen(true);
+  }, []);
+
+  const handleCloseCreateProjectModal = useCallback(() => {
+      setIsCreateProjectModalOpen(false);
+  }, []);
+
+  const handleProjectCreated = useCallback(
+    async (projectId: string) => {
+      setIsCreateProjectModalOpen(false);
+      await loadProjects();
+      navigate(`/projects/${projectId}`);
+    },
+    [loadProjects, navigate]
+  );
 
   return {
     projects,
@@ -76,7 +83,8 @@ export function useProjects() {
     handleSort,
     handleProjectClick,
     handleCreateNewProject,
+    handleCloseCreateProjectModal,
+    handleProjectCreated,
+    isCreateProjectModalOpen,
   };
 }
-
-

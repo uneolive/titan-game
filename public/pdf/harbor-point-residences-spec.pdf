@@ -1,0 +1,51 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 353 >>
+stream
+BT
+/F1 18 Tf
+72 736 Td
+(Harbor Point Residences - Full Specification Manual) Tj
+0 -28 Td
+/F1 12 Tf
+(Project type: Architecture) Tj
+0 -18 Td
+(Key sections included:) Tj
+0 -18 Td
+(07 92 00 Joint Sealants) Tj
+0 -18 Td
+(08 44 13 Glazed Aluminum Curtain Walls) Tj
+0 -18 Td
+(08 71 00 Door Hardware) Tj
+0 -30 Td
+(Testing note: This file provides architecture-focused context for the Harbor Point seeded submittals.) Tj
+0 -18 Td
+(Open it from the modal to verify layout, title binding, and PDF rendering in mock mode.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000010 00000 n 
+0000000063 00000 n 
+0000000122 00000 n 
+0000000248 00000 n 
+0000000318 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+721
+%%EOF
