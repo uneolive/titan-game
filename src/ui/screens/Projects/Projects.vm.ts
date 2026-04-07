@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects } from '@/services/projects/ProjectService.ts';
+import { deleteProject, getProjects } from '@/services/projects/ProjectService.ts';
 import { ProjectBO } from '@/types/bos/projects/ProjectBO.ts';
 import { ServiceResultStatusENUM } from '@/types/enums/ServiceResultStatusENUM.ts';
 
@@ -13,6 +13,8 @@ export function useProjects() {
   const [sortBy, setSortBy] = useState('project_name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
+  const [pendingDeleteProjectId, setPendingDeleteProjectId] = useState<string | null>(null);
+  const [isDeletingProjectId, setIsDeletingProjectId] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -73,6 +75,37 @@ export function useProjects() {
     [loadProjects, navigate]
   );
 
+  const handleRequestDeleteProject = useCallback((projectId: string) => {
+    setPendingDeleteProjectId(projectId);
+  }, []);
+
+  const handleCancelDeleteProject = useCallback(() => {
+    setPendingDeleteProjectId(null);
+  }, []);
+
+  const handleDeleteProject = useCallback(
+    async (projectId: string) => {
+      try {
+        setIsDeletingProjectId(projectId);
+        setError(null);
+
+        const result = await deleteProject(projectId);
+
+        if (result.statusCode === ServiceResultStatusENUM.SUCCESS) {
+          setPendingDeleteProjectId(null);
+          await loadProjects();
+        } else {
+          setError(result.message);
+        }
+      } catch {
+        setError('Failed to delete project. Please try again.');
+      } finally {
+        setIsDeletingProjectId(null);
+      }
+    },
+    [loadProjects]
+  );
+
   return {
     projects,
     isLoading,
@@ -86,5 +119,10 @@ export function useProjects() {
     handleCloseCreateProjectModal,
     handleProjectCreated,
     isCreateProjectModalOpen,
+    pendingDeleteProjectId,
+    isDeletingProjectId,
+    handleRequestDeleteProject,
+    handleCancelDeleteProject,
+    handleDeleteProject,
   };
 }

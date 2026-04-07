@@ -5,11 +5,12 @@ import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { PDFViewer } from '@/ui/reusables/PDFViewer/PDFViewer.tsx';
 import { ProgressLoader } from '@/ui/reusables/ProgressLoader/ProgressLoader.tsx';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
+import { SpecificationManual } from '@/ui/screens/SpecificationManual/SpecificationManual.tsx';
 import { Submittal } from '@/ui/screens/Submittal/Submittal.tsx';
 import { AIResult } from '@/ui/screens/AIResult/AIResult.tsx';
 import { useUserName, useUserRole } from '@/helpers/utilities/useUser.ts';
 import { formatDateToLocal } from '@/helpers/utilities/formatters.ts';
-import { FiArrowLeft, FiPlus, FiFileText, FiTrash2, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiFileText, FiTrash2, FiX } from 'react-icons/fi';
 
 export function ProjectDetail() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -27,14 +28,18 @@ export function ProjectDetail() {
     selectedDocumentTitle,
     showPDFViewer,
     showProgressPopup,
+    isNewSpecManualModalOpen,
     isNewSubmittalModalOpen,
     selectedResultSubmittalId,
+    pendingDeleteSpecDocumentId,
+    isDeletingSpecDocumentId,
     pendingDeleteSubmittalId,
     inProgressSubmittals,
     handleTabChange,
     handleSpecDocumentClick,
     handleClosePDFViewer,
     handleCloseProgressPopup,
+    handleCloseNewSpecManualModal,
     handleCloseNewSubmittalModal,
     handleOpenResultModal,
     handleCloseResultModal,
@@ -43,8 +48,11 @@ export function ProjectDetail() {
     handleNewSubmittal,
     handleSubmittalClick,
     handleRequestDeleteSubmittal,
+    handleRequestDeleteSpecDocument,
     handleCancelDeleteSubmittal,
+    handleCancelDeleteSpecDocument,
     handleDeleteSubmittal,
+    handleDeleteSpecDocument,
     isSubmittalDisabled,
     navigateBack,
     refreshProjectDetails,
@@ -55,6 +63,9 @@ export function ProjectDetail() {
 
   const pendingDeleteSubmittal = submittals.find(
     (submittal) => submittal.submittalId === pendingDeleteSubmittalId
+  );
+  const pendingDeleteSpecDocument = specificationDocuments.find(
+    (document) => document.documentId === pendingDeleteSpecDocumentId
   );
 
   useEffect(() => {
@@ -231,24 +242,19 @@ export function ProjectDetail() {
                   {specificationDocumentsCount}
                 </span>
               </div>
-              {isNewSpecManualEnabled() && (
-                <button
-                  onClick={handleNewSpecManual}
-                  className="btn-ds-primary-sm"
-                >
-                  <FiPlus size={14} />
-                  New Spec Manual
+              {isNewSpecManualEnabled() ? (
+                <button onClick={handleNewSpecManual} className="btn-ds-primary-sm">
+                  Add Specification Manual
                 </button>
-              )}
-              {!isNewSpecManualEnabled() && (
-                <div className="h-[30px] min-w-[140px]" aria-hidden="true" />
+              ) : (
+                <div className="h-[30px] min-w-[180px]" aria-hidden="true" />
               )}
             </div>
 
             {/* Table or Empty State */}
             {specificationDocuments.length === 0 ? (
               <div className="overflow-hidden rounded-[4px] border border-[#E5E7EB] bg-white">
-                <p className="py-8 text-center text-[12.3px] leading-[17.5px] text-[#6B7280]">
+                <p className="py-8 text-center text-sm leading-5 text-[#6B7280]">
                   No specification manuals uploaded yet.
                 </p>
               </div>
@@ -266,6 +272,7 @@ export function ProjectDetail() {
                       <th className="px-7 py-[8.75px] text-left text-sm font-semibold leading-5 text-gray-700">
                         Uploaded
                       </th>
+                      <th className="px-7 py-[8.75px] text-right text-sm font-semibold leading-5 text-gray-700"></th>
                     </tr>
                   </thead>
                   <tbody className="bg-white">
@@ -273,13 +280,13 @@ export function ProjectDetail() {
                       <tr
                         key={doc.documentId}
                         onClick={() => handleSpecDocumentClick(doc.s3Url, doc.documentName)}
-                        className={`cursor-pointer transition-colors hover:bg-[#F9FAFB] ${
+                        className={`group cursor-pointer transition-colors hover:bg-[#F9FAFB] ${
                           index !== specificationDocuments.length - 1
                             ? 'border-b border-[#E5E7EB]'
                             : ''
                         }`}
                       >
-                        <td className="px-7 py-[8.19px]">
+                        <td className="px-7 py-4">
                           <div className="flex items-center gap-[10.5px]">
                             <FiFileText size={17.5} className="flex-shrink-0 text-[#3B82F6]" />
                             <span className="text-sm font-medium leading-5 text-[#2A2A2A]">
@@ -287,15 +294,29 @@ export function ProjectDetail() {
                             </span>
                           </div>
                         </td>
-                        <td className="px-7 py-[7.4px] text-left">
+                        <td className="px-7 py-4 text-left">
                           <span className="inline-flex h-6 max-w-[200px] items-center overflow-hidden rounded-[4px] border border-transparent bg-[#F6F6F6] px-[6px] text-[12px] font-normal leading-none text-[#2A2A2A]">
                             {formatDivisionTag(doc.documentTag)}
                           </span>
                         </td>
-                        <td className="px-7 py-[7.4px]">
-                          <span className="text-sm font-normal leading-5 text-[#6B7280]">
+                        <td className="px-7 py-4">
+                          <span className="text-sm font-medium leading-5 text-[#2A2A2A]">
                             {formatDateToLocal(doc.date)}
                           </span>
+                        </td>
+                        <td className="px-7 py-4 text-right">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleRequestDeleteSpecDocument(doc.documentId);
+                            }}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-[8px] text-[#6A7282] opacity-0 transition-all hover:bg-[#F9FAFB] hover:text-[#B42318] focus-visible:opacity-100 group-hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label={`Delete ${doc.documentName}`}
+                            disabled={isDeletingSpecDocumentId === doc.documentId}
+                          >
+                            <FiTrash2 size={14} />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -330,7 +351,7 @@ export function ProjectDetail() {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#F5F5F5]">
                   <FiFileText size={32} className="text-[#BDBDBD]" />
                 </div>
-                <p className="text-[14px] leading-5 text-[#757575]">No submittals yet</p>
+                <p className="text-sm leading-5 text-[#757575]">No submittals yet</p>
               </div>
             ) : (
               <div className="overflow-hidden rounded-[4px] border border-[#E5E7EB] bg-white">
@@ -405,7 +426,7 @@ export function ProjectDetail() {
                             );
                           })()}
                         </td>
-                        <td className="px-7 py-4 text-sm font-normal leading-5 text-[#4A5565]">
+                        <td className="px-7 py-4 text-sm font-medium leading-5 text-[#2A2A2A]">
                           {formatDateToLocal(submittal.date)}
                         </td>
                         <td className="px-7 py-4 text-right">
@@ -465,6 +486,18 @@ export function ProjectDetail() {
         />
       )}
 
+      {isNewSpecManualModalOpen && (
+        <SpecificationManual
+          projectIdOverride={projectId!}
+          modalMode
+          onClose={handleCloseNewSpecManualModal}
+          onSuccess={async () => {
+            handleCloseNewSpecManualModal();
+            await refreshProjectDetails();
+          }}
+        />
+      )}
+
       {selectedResultSubmittalId && (
         <AIResult
           projectIdOverride={projectId!}
@@ -488,7 +521,7 @@ export function ProjectDetail() {
           }}
         >
           <div
-            className="relative flex w-full min-w-[400px] max-w-[720px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+            className="relative flex w-full min-w-[400px] max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -532,6 +565,66 @@ export function ProjectDetail() {
                 disabled={Boolean(isDeletingSubmittalId)}
               >
                 {isDeletingSubmittalId ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingDeleteSpecDocumentId && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#101828]/45 px-4 py-10"
+          onClick={() => {
+            if (!isDeletingSpecDocumentId) {
+              handleCancelDeleteSpecDocument();
+            }
+          }}
+        >
+          <div
+            className="relative flex w-full min-w-[400px] max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-spec-document-title"
+          >
+            <div className="border-b border-[#EEEEEE] bg-white px-6 py-6">
+              <button
+                type="button"
+                onClick={handleCancelDeleteSpecDocument}
+                className="absolute right-6 top-6 inline-flex h-4 w-4 items-center justify-center text-[#2A2A2A] transition-opacity hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Close delete specification manual confirmation"
+                disabled={Boolean(isDeletingSpecDocumentId)}
+              >
+                <FiX size={16} />
+              </button>
+              <h2
+                id="delete-spec-document-title"
+                className="pr-10 text-[24px] font-semibold tracking-[-0.48px] text-[#101828]"
+              >
+                Remove Specification Manual
+              </h2>
+              <p className="mt-4 max-w-[560px] text-[14px] leading-[21px] text-[#4A5565]">
+                {pendingDeleteSpecDocument
+                  ? `Are you sure you want to remove "${pendingDeleteSpecDocument.documentName}" from this project?`
+                  : 'Are you sure you want to remove this specification manual from this project?'}
+              </p>
+            </div>
+            <div className="shrink-0 flex items-center justify-end gap-4 bg-white px-4 py-4">
+              <button
+                type="button"
+                onClick={handleCancelDeleteSpecDocument}
+                className="btn-ds-secondary-sm disabled:opacity-40"
+                disabled={Boolean(isDeletingSpecDocumentId)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteSpecDocument(pendingDeleteSpecDocumentId)}
+                className="btn-ds-destructive-sm disabled:opacity-40"
+                disabled={Boolean(isDeletingSpecDocumentId)}
+              >
+                {isDeletingSpecDocumentId ? 'Removing...' : 'Remove'}
               </button>
             </div>
           </div>

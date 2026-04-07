@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { deleteSubmittal, getProjectDetails } from '@/services/projectDetail/ProjectDetailService.ts';
+import {
+  deleteSpecificationManual,
+  deleteSubmittal,
+  getProjectDetails,
+} from '@/services/projectDetail/ProjectDetailService.ts';
 import {
   subscribeToSubmittalProgress,
   unsubscribeFromSubmittalProgress,
@@ -36,8 +40,11 @@ export function useProjectDetail(projectId: string) {
   const [selectedDocumentTitle, setSelectedDocumentTitle] = useState<string | null>(null);
   const [showPDFViewer, setShowPDFViewer] = useState(false);
   const [showProgressPopup, setShowProgressPopup] = useState<string | null>(null);
+  const [isNewSpecManualModalOpen, setIsNewSpecManualModalOpen] = useState(false);
   const [isNewSubmittalModalOpen, setIsNewSubmittalModalOpen] = useState(false);
   const [selectedResultSubmittalId, setSelectedResultSubmittalId] = useState<string | null>(null);
+  const [pendingDeleteSpecDocumentId, setPendingDeleteSpecDocumentId] = useState<string | null>(null);
+  const [isDeletingSpecDocumentId, setIsDeletingSpecDocumentId] = useState<string | null>(null);
   const [pendingDeleteSubmittalId, setPendingDeleteSubmittalId] = useState<string | null>(null);
   const [inProgressSubmittals, setInProgressSubmittals] = useState<
     Map<string, { eventSource: EventSource; progressData: SubmittalProgressBO }>
@@ -245,16 +252,17 @@ export function useProjectDetail(projectId: string) {
 
   // SEQ: 6.2 - Call handleNewSpecManual()
   const handleNewSpecManual = useCallback(() => {
-    navigate(`/projects/${projectId}/spec-manual`);
-  }, [projectId, navigate]);
+    setIsNewSpecManualModalOpen(true);
+  }, []);
+
+  const handleCloseNewSpecManualModal = useCallback(() => {
+    setIsNewSpecManualModalOpen(false);
+  }, []);
 
   // SEQ: 6.3 - Call isNewSpecManualEnabled()
   const isNewSpecManualEnabled = useCallback(() => {
-    return (
-      specificationDocumentsCount === 1 &&
-      specificationDocuments.some((doc) => doc.documentTag !== 'completemanual')
-    );
-  }, [specificationDocumentsCount, specificationDocuments]);
+    return true;
+  }, []);
 
   // SEQ: 7.2 - Call handleNewSubmittal()
   const handleNewSubmittal = useCallback(() => {
@@ -297,8 +305,16 @@ export function useProjectDetail(projectId: string) {
     setPendingDeleteSubmittalId(submittalId);
   }, []);
 
+  const handleRequestDeleteSpecDocument = useCallback((documentId: string) => {
+    setPendingDeleteSpecDocumentId(documentId);
+  }, []);
+
   const handleCancelDeleteSubmittal = useCallback(() => {
     setPendingDeleteSubmittalId(null);
+  }, []);
+
+  const handleCancelDeleteSpecDocument = useCallback(() => {
+    setPendingDeleteSpecDocumentId(null);
   }, []);
 
   const handleDeleteSubmittal = useCallback(
@@ -334,6 +350,38 @@ export function useProjectDetail(projectId: string) {
     [loadProjectDetails, selectedResultSubmittalId, showProgressPopup]
   );
 
+  const handleDeleteSpecDocument = useCallback(
+    async (documentId: string) => {
+      try {
+        setIsDeletingSpecDocumentId(documentId);
+        setError(null);
+
+        const result = await deleteSpecificationManual(documentId);
+
+        if (result.statusCode === ServiceResultStatusENUM.SUCCESS) {
+          if (selectedDocumentUrl) {
+            setShowPDFViewer(false);
+            setSelectedDocumentUrl(null);
+            setSelectedDocumentTitle(null);
+          }
+          setPendingDeleteSpecDocumentId(null);
+          await loadProjectDetails();
+        } else {
+          setError(result.message);
+        }
+      } catch (error) {
+        Logger.error('Unexpected error in handleDeleteSpecDocument', {
+          documentId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+        setError('Failed to delete specification manual');
+      } finally {
+        setIsDeletingSpecDocumentId(null);
+      }
+    },
+    [loadProjectDetails, selectedDocumentUrl]
+  );
+
   const navigateBack = useCallback(() => {
     navigate('/projects');
   }, [navigate]);
@@ -352,14 +400,18 @@ export function useProjectDetail(projectId: string) {
     selectedDocumentTitle,
     showPDFViewer,
     showProgressPopup,
+    isNewSpecManualModalOpen,
     isNewSubmittalModalOpen,
     selectedResultSubmittalId,
+    pendingDeleteSpecDocumentId,
+    isDeletingSpecDocumentId,
     pendingDeleteSubmittalId,
     inProgressSubmittals,
     handleTabChange,
     handleSpecDocumentClick,
     handleClosePDFViewer,
     handleCloseProgressPopup,
+    handleCloseNewSpecManualModal,
     handleCloseNewSubmittalModal,
     handleOpenResultModal,
     handleCloseResultModal,
@@ -368,8 +420,11 @@ export function useProjectDetail(projectId: string) {
     handleNewSubmittal,
     handleSubmittalClick,
     handleRequestDeleteSubmittal,
+    handleRequestDeleteSpecDocument,
     handleCancelDeleteSubmittal,
+    handleCancelDeleteSpecDocument,
     handleDeleteSubmittal,
+    handleDeleteSpecDocument,
     isSubmittalDisabled,
     navigateBack,
     refreshProjectDetails: loadProjectDetails,

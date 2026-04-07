@@ -95,3 +95,24 @@ export async function deleteSubmittal(submittalId: string): Promise<ServiceResul
     };
   }
 }
+
+export async function deleteSpecificationManual(documentId: string): Promise<ServiceResult<null>> {
+  try {
+    const response = await client(`/api/specification-documents/${documentId}`, null, 'DELETE');
+    const camelCaseData = convertKeysToCamelCase<{ code?: number; message?: string; data?: null }>(
+      response.data
+    );
+
+    return toServiceResult<null>({
+      code: camelCaseData.code,
+      data: camelCaseData.data ?? null,
+      message: camelCaseData.message,
+    });
+  } catch {
+    return {
+      data: null,
+      message: 'Failed to delete specification manual',
+      statusCode: ServiceResultStatusENUM.ERROR,
+    };
+  }
+}

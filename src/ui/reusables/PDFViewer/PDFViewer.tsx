@@ -41,7 +41,7 @@ export function PDFViewer({ isOpen, s3Url, documentName, onClose }: PDFViewerPro
         aria-labelledby="pdf-viewer-title"
       >
         <div
-          className="relative flex h-[calc(100dvh-32px)] w-full max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+          className="relative flex h-[calc(100dvh-32px)] w-full max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="shrink-0 border-b border-[#EEEEEE] bg-white px-6 py-6">

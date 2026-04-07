@@ -121,10 +121,10 @@ export function SpecificationManual({
   const uploadZoneClass = `block cursor-pointer ${
     modalMode ? 'rounded-[4px]' : 'rounded-[12px]'
   } border-2 border-dashed border-[#D1D5DC] bg-white p-6 text-center transition-colors hover:border-[#4485F1]`;
-  const titleText = isNewProject ? 'Create New Project' : 'Project Setup';
+  const titleText = isNewProject ? 'Create New Project' : 'Add Specification Manuals';
   const introText = isNewProject
     ? 'Set up the project details and upload the governing specification manual before starting submittals.'
-    : "Let's start by setting up your project and uploading the specification manual";
+    : 'Upload additional specification manuals to this project.';
   const handleClose = onClose ?? navigateBack;
 
   useEffect(() => {
@@ -169,15 +169,7 @@ export function SpecificationManual({
       </div>
 
       <div className={modalMode ? 'min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6' : ''}>
-        <div className={modalMode ? 'rounded-[4px] border border-[#EEEEEE] bg-white' : 'rounded-[14px] border border-[#DCE3EA] bg-white p-8 shadow-sm'}>
-          <div className={modalMode ? 'border-b border-[#EEEEEE] px-6 py-5' : 'mb-6 flex flex-col gap-2 border-b border-[#E5E7EB] pb-6'}>
-            <h2 className="text-[18px] font-semibold leading-6 text-[#101828]">
-              Specification Intake
-            </h2>
-            <p className="text-[14px] leading-5 text-[#4A5565]">
-              Capture the project basics first, then upload the governing specification documents.
-            </p>
-          </div>
+        <div className={modalMode ? 'bg-white' : 'rounded-[14px] border border-[#DCE3EA] bg-white p-8 shadow-sm'}>
 
           {error && (
             <div
@@ -198,72 +190,74 @@ export function SpecificationManual({
                 e.preventDefault();
                 handleSubmit();
               }}
-              className={modalMode ? 'space-y-8 px-6 py-6' : 'space-y-8'}
+              className={modalMode ? 'space-y-8' : 'space-y-8'}
             >
-              <section className="space-y-6">
-                <div className="space-y-1">
-                  <h3 className="text-[16px] font-semibold leading-6 text-[#101828]">
-                    Project Details
-                  </h3>
-                  <p className="text-[14px] leading-5 text-[#667085]">
-                    Define the project identity and how the spec package is organized.
-                  </p>
-                </div>
+              {isNewProject && (
+                <section className="space-y-6">
+                  <div className="space-y-6">
+                    <div>
+                      <label htmlFor="projectName" className={fieldLabelClass}>
+                        <FiFileText size={14} className="text-[#6B7280]" />
+                        Project Name <span className="text-[#F44336]">*</span>
+                      </label>
+                      <input
+                        id="projectName"
+                        type="text"
+                        value={projectName}
+                        onChange={(e) => handleProjectNameChange(e.target.value)}
+                        disabled={isFieldDisabled()}
+                        className={`${inputClass} ${
+                          projectNameError ? 'border-[#F44336]' : 'border-[#D2D2D2]'
+                        } ${
+                          isFieldDisabled()
+                            ? 'cursor-not-allowed bg-[#F3F4F6] text-[#98A2B3]'
+                            : ''
+                        }`}
+                        placeholder="Enter project name"
+                      />
+                      {projectNameError && (
+                        <p className="mt-2 text-[13px] leading-4 text-[#B42318]">{projectNameError}</p>
+                      )}
+                    </div>
 
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="projectName" className={fieldLabelClass}>
-                      <FiFileText size={14} className="text-[#6B7280]" />
-                      Project Name <span className="text-[#F44336]">*</span>
-                    </label>
-                    <input
-                      id="projectName"
-                      type="text"
-                      value={projectName}
-                      onChange={(e) => handleProjectNameChange(e.target.value)}
-                      disabled={isFieldDisabled()}
-                      className={`${inputClass} ${
-                        projectNameError ? 'border-[#F44336]' : 'border-[#D2D2D2]'
-                      } ${
-                        isFieldDisabled()
-                          ? 'cursor-not-allowed bg-[#F3F4F6] text-[#98A2B3]'
-                          : ''
-                      }`}
-                      placeholder="Enter project name"
-                    />
-                    {projectNameError && (
-                      <p className="mt-2 text-[13px] leading-4 text-[#B42318]">{projectNameError}</p>
-                    )}
+                    <div>
+                      <label htmlFor="projectType" className={fieldLabelClass}>
+                        <FiLayers size={14} className="text-[#6B7280]" />
+                        Project Type <span className="text-[#F44336]">*</span>
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="projectType"
+                          value={projectType}
+                          onChange={(e) => handleProjectTypeChange(e.target.value)}
+                          disabled={isFieldDisabled()}
+                          className={`${inputClass} appearance-none pr-10 ${
+                            projectTypeError ? 'border-[#F44336]' : 'border-[#D2D2D2]'
+                          } ${
+                            isFieldDisabled()
+                              ? 'cursor-not-allowed bg-[#F3F4F6] text-[#98A2B3]'
+                              : ''
+                          }`}
+                        >
+                          <option value="">Select project type</option>
+                          <option value="Architecture">Architecture</option>
+                          <option value="Construction">Construction</option>
+                          <option value="Engineering">Engineering</option>
+                        </select>
+                        <FiChevronDown
+                          size={14}
+                          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280]"
+                        />
+                      </div>
+                      {projectTypeError && (
+                        <p className="mt-2 text-[13px] leading-4 text-[#B42318]">{projectTypeError}</p>
+                      )}
+                    </div>
                   </div>
+                </section>
+              )}
 
-                  <div>
-                    <label htmlFor="projectType" className={fieldLabelClass}>
-                      <FiLayers size={14} className="text-[#6B7280]" />
-                      Project Type <span className="text-[#F44336]">*</span>
-                    </label>
-                    <select
-                      id="projectType"
-                      value={projectType}
-                      onChange={(e) => handleProjectTypeChange(e.target.value)}
-                      disabled={isFieldDisabled()}
-                      className={`${inputClass} ${
-                        projectTypeError ? 'border-[#F44336]' : 'border-[#D2D2D2]'
-                      } ${
-                        isFieldDisabled()
-                          ? 'cursor-not-allowed bg-[#F3F4F6] text-[#98A2B3]'
-                          : ''
-                      }`}
-                    >
-                      <option value="">Select project type</option>
-                      <option value="Architecture">Architecture</option>
-                      <option value="Construction">Construction</option>
-                      <option value="Engineering">Engineering</option>
-                    </select>
-                    {projectTypeError && (
-                      <p className="mt-2 text-[13px] leading-4 text-[#B42318]">{projectTypeError}</p>
-                    )}
-                  </div>
-                </div>
+              <section className={modalMode ? 'space-y-6 pt-2' : 'space-y-6 border-t border-[#E5E7EB] pt-8'}>
 
                 <div className={`${mutedPanelClass} flex items-center gap-4 px-4 py-4`}>
                   <FiLayers size={16} className="text-[#6B7280]" />
@@ -298,17 +292,6 @@ export function SpecificationManual({
                       />
                     </label>
                   </div>
-                </div>
-              </section>
-
-              <section className="space-y-6 border-t border-[#E5E7EB] pt-8">
-                <div className="space-y-1">
-                  <h3 className="text-[16px] font-semibold leading-6 text-[#101828]">
-                    Specification Documents
-                  </h3>
-                  <p className="text-[14px] leading-5 text-[#667085]">
-                    Upload the governing specification source used to prepare submittal review.
-                  </p>
                 </div>
 
               {/* Complete Upload Mode */}
@@ -627,7 +610,7 @@ export function SpecificationManual({
               className="btn-ds-primary-sm"
               disabled={isAnalyzing || !isFormValid}
             >
-              {isAnalyzing ? 'Processing...' : 'Create'}
+              {isAnalyzing ? 'Processing...' : isNewProject ? 'Create' : 'Add'}
             </button>
           </div>
         </div>

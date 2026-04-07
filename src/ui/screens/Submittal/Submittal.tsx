@@ -206,7 +206,7 @@ export function Submittal({
 
         <div className={modalMode ? 'min-h-0 flex-1 overflow-y-auto bg-white px-6 py-6' : ''}>
         {modalMode && isAnalyzing ? (
-          <div className="flex min-h-full items-center justify-center rounded-[4px] border border-[#EEEEEE] bg-white px-6 py-6">
+          <div className="flex min-h-full items-center justify-center bg-white">
             <div className="flex max-w-[360px] flex-col items-center gap-4 text-center">
               <Spinner size="lg" color="#1976D2" />
               <div className="space-y-2">
@@ -220,7 +220,7 @@ export function Submittal({
             </div>
           </div>
         ) : (
-        <div className={modalMode ? 'rounded-[4px] border border-[#EEEEEE] bg-white px-6 py-6' : 'rounded-[14px] bg-white p-7 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]'}>
+        <div className={modalMode ? 'bg-white' : 'rounded-[14px] bg-white p-7 shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]'}>
           {errors.general && (
             <div
               className={`mb-6 ${modalMode ? 'rounded-[4px]' : 'rounded-[8px]'} bg-[#FEF2F2] p-4 text-[12.3px] text-[#F44336]`}
@@ -240,7 +240,7 @@ export function Submittal({
             <div className="mb-6">
               <label
                 htmlFor="title"
-                className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]"
+                className="mb-2 flex items-center gap-2 text-[14px] font-medium leading-5 text-[#111827]"
               >
                 <FiFileText size={14} className="text-[#6B7280]" />
                 Title <span className="text-[#F44336]">*</span>
@@ -250,19 +250,19 @@ export function Submittal({
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                className={`h-[42px] w-full rounded-[12px] border px-3 text-[12.3px] text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20 ${
+                className={`h-[42px] w-full rounded-[10px] border px-3 text-[14px] leading-5 text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20 ${
                   errors.title ? 'border-[#F44336]' : 'border-[#E5E7EB]'
                 } bg-white`}
                 placeholder="Enter a title for the submittal"
               />
-              {errors.title && <p className="mt-1 text-[12.3px] text-[#F44336]">{errors.title}</p>}
+              {errors.title && <p className="mt-1 text-[14px] leading-5 text-[#F44336]">{errors.title}</p>}
             </div>
 
             {/* Specification Section */}
             <div className="relative mb-6" ref={dropdownRef}>
               <label
                 htmlFor="specSection"
-                className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]"
+                className="mb-2 flex items-center gap-2 text-[14px] font-medium leading-5 text-[#111827]"
               >
                 <FiLayers size={14} className="text-[#6B7280]" />
                 Specification Section <span className="text-[#F44336]">*</span>
@@ -276,7 +276,7 @@ export function Submittal({
                   setShowDropdown(true);
                 }}
                 onFocus={() => setShowDropdown(true)}
-                className={`h-[42px] w-full rounded-[12px] border px-3 text-[12.3px] text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20 ${
+                className={`h-[42px] w-full rounded-[10px] border px-3 text-[14px] leading-5 text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20 ${
                   errors.specSection ? 'border-[#F44336]' : 'border-[#E5E7EB]'
                 } bg-white`}
                 placeholder="Type to search specification sections..."
@@ -320,7 +320,7 @@ export function Submittal({
                 </div>
               )}
               {errors.specSection && (
-                <p className="mt-1 text-[12.3px] text-[#F44336]">{errors.specSection}</p>
+                <p className="mt-1 text-[14px] leading-5 text-[#F44336]">{errors.specSection}</p>
               )}
             </div>
 
@@ -328,7 +328,7 @@ export function Submittal({
             <div className="mb-6">
               <label
                 htmlFor="description"
-                className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]"
+                className="mb-2 flex items-center gap-2 text-[14px] font-medium leading-5 text-[#111827]"
               >
                 <FiAlignLeft size={14} className="text-[#6B7280]" />
                 Description
@@ -337,7 +337,7 @@ export function Submittal({
                 id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description', e.target.value)}
-                className="w-full rounded-[12px] border border-[#E5E7EB] bg-white px-3 py-2 text-[12.3px] text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20"
+                className="w-full rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 text-[14px] leading-5 text-[#111827] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-2 focus:ring-[#3B82F6] focus:ring-opacity-20"
                 placeholder="Enter a description for the submittal"
                 rows={3}
               />
@@ -345,7 +345,7 @@ export function Submittal({
 
             {/* File Upload */}
             <div className="mb-6">
-              <label className="mb-2 flex items-center gap-2 text-[12.3px] font-medium text-[#111827]">
+              <label className="mb-2 flex items-center gap-2 text-[14px] font-medium leading-5 text-[#111827]">
                 <FiFileText size={14} className="text-[#6B7280]" />
                 Upload Submittal Document <span className="text-[#F44336]">*</span>
               </label>
@@ -359,7 +359,7 @@ export function Submittal({
               />
               <label
                 htmlFor="submittalFiles"
-                className="block cursor-pointer rounded-[12px] border-2 border-dashed border-[#D1D5DC] bg-white p-6 text-center transition-colors hover:border-[#3B82F6]"
+                className="block cursor-pointer rounded-[10px] border-2 border-dashed border-[#D1D5DC] bg-white p-6 text-center transition-colors hover:border-[#3B82F6]"
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
               >
@@ -369,7 +369,7 @@ export function Submittal({
                 <p className="mb-2 text-[14px] text-[#101828]">
                   Drag and drop your submittal document here, or click to browse
                 </p>
-                <p className="text-[12.3px] text-[#6A7282]">Accepted formats: PDF</p>
+                <p className="text-[14px] leading-5 text-[#6A7282]">Accepted formats: PDF</p>
               </label>
 
               {uploadedFiles.length > 0 && (
@@ -379,7 +379,7 @@ export function Submittal({
                       key={index}
                       className="flex items-center justify-between rounded-[8px] bg-[#F9FAFB] p-3"
                     >
-                      <span className="text-[12.3px] text-[#111827]">{file.name}</span>
+                      <span className="text-[14px] leading-5 text-[#111827]">{file.name}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveFile(index)}
@@ -392,7 +392,7 @@ export function Submittal({
                 </div>
               )}
 
-              {errors.files && <p className="mt-2 text-[12.3px] text-[#F44336]">{errors.files}</p>}
+              {errors.files && <p className="mt-2 text-[14px] leading-5 text-[#F44336]">{errors.files}</p>}
             </div>
 
             {!modalMode && (
@@ -452,7 +452,7 @@ export function Submittal({
         onClick={handleClose}
       >
         <div
-          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-all duration-200"
+          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-all duration-200"
           onClick={(event) => event.stopPropagation()}
         >
           <button

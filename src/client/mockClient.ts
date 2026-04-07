@@ -1327,6 +1327,60 @@ export async function client(
     return makeAxiosResponse(makeEnvelope(null, 'Submittal deleted'));
   }
 
+  const specificationDocumentMatch = path.match(/^\/api\/specification-documents\/([^/]+)$/);
+  if (method === 'DELETE' && specificationDocumentMatch) {
+    const documentId = specificationDocumentMatch[1];
+    let removed = false;
+
+    projects.forEach((project) => {
+      const nextDocuments = project.specificationDocuments.filter(
+        (document) => document.documentId !== documentId
+      );
+
+      if (nextDocuments.length !== project.specificationDocuments.length) {
+        project.specificationDocuments = nextDocuments;
+        project.divisions = project.divisions
+          .map((division) => ({
+            ...division,
+            documents: division.documents.filter((document) => document.documentId !== documentId),
+          }))
+          .filter((division) => division.documents.length > 0);
+        project.isDivisionBased =
+          project.specificationDocuments.length > 0 &&
+          project.specificationDocuments.every((document) => document.documentTag !== 'completemanual');
+        removed = true;
+      }
+    });
+
+    if (!removed) {
+      return makeAxiosResponse(makeEnvelope(null, 'Specification manual not found', 404), 404);
+    }
+
+    return makeAxiosResponse(makeEnvelope(null, 'Specification manual deleted'));
+  }
+
+  const projectMatch = path.match(/^\/api\/projects\/([^/]+)$/);
+  if (method === 'DELETE' && projectMatch) {
+    const projectId = projectMatch[1];
+    const project = projects.get(projectId);
+
+    if (!project) {
+      return makeAxiosResponse(makeEnvelope(null, 'Project not found', 404), 404);
+    }
+
+    project.submittals.forEach((submittal) => {
+      submittalResults.delete(submittal.submittalId);
+      const job = backgroundJobs.get(submittal.submittalId);
+      if (job?.timerId) {
+        clearTimeout(job.timerId);
+      }
+      backgroundJobs.delete(submittal.submittalId);
+    });
+
+    projects.delete(projectId);
+    return makeAxiosResponse(makeEnvelope(null, 'Project deleted'));
+  }
+
   throw new Error(`Unhandled mock endpoint: ${method} ${path}`);
 }
 

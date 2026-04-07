@@ -70,7 +70,7 @@ export function Login() {
                   type="text"
                   value={email}
                   onChange={(e) => handleEmailChange(e.target.value)}
-                  className={`h-[38.5px] w-full rounded-lg border ${
+                  className={`h-[38.5px] w-full rounded-[10px] border ${
                     emailError ? 'border-error' : 'border-gray-200'
                   } bg-white px-[34.8px] text-xs text-gray-900 placeholder-gray-500 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
                   placeholder="Enter your email"
@@ -98,7 +98,7 @@ export function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => handlePasswordChange(e.target.value)}
-                  className={`h-[38.5px] w-full rounded-lg border ${
+                  className={`h-[38.5px] w-full rounded-[10px] border ${
                     passwordError ? 'border-error' : 'border-gray-200'
                   } bg-white px-[10.3px] pr-8 text-xs text-gray-900 placeholder-gray-500 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
                   placeholder="Enter your password"
