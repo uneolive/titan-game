@@ -2,6 +2,7 @@ import { useProjects } from './Projects.vm.ts';
 import { Header } from '@/ui/reusables/Header/Header.tsx';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import { useUserName, useUserRole } from '@/helpers/utilities/useUser.ts';
+import { SpecificationManual } from '@/ui/screens/SpecificationManual/SpecificationManual.tsx';
 import sortIconSvg from '@/assets/images/sort-icon.svg';
 
 export function Projects() {
@@ -16,6 +17,9 @@ export function Projects() {
     handleSort,
     handleProjectClick,
     handleCreateNewProject,
+    handleCloseCreateProjectModal,
+    handleProjectCreated,
+    isCreateProjectModalOpen,
   } = projectsState;
 
   const userName = useUserName();
@@ -160,6 +164,15 @@ export function Projects() {
           </div>
         )}
       </main>
+
+      {isCreateProjectModalOpen && (
+        <SpecificationManual
+          modalMode
+          projectIdOverride="0"
+          onClose={handleCloseCreateProjectModal}
+          onSuccess={handleProjectCreated}
+        />
+      )}
     </div>
   );
 }
