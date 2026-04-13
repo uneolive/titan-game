@@ -91,8 +91,6 @@ export function Login() {
               )}
             </div>
 
-            <p className="mb-[21px] text-xs leading-[18px] text-gray-500">Password: lévis</p>
-
             <button
               type="submit"
               className="h-[38.5px] w-full rounded-lg bg-primary text-xs font-medium leading-[17.5px] text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
