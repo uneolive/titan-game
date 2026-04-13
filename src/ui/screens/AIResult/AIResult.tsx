@@ -9,6 +9,7 @@ import { formatConfidenceScore } from '@/helpers/utilities/formatters.ts';
 
 interface AIResultProps {
   modalMode?: boolean;
+  sharedModalShell?: boolean;
   onClose?: () => void;
   onStartNewSubmittal?: () => void;
   projectIdOverride?: string;
@@ -17,6 +18,7 @@ interface AIResultProps {
 
 export function AIResult({
   modalMode = false,
+  sharedModalShell = false,
   onClose,
   onStartNewSubmittal,
   projectIdOverride,
@@ -45,7 +47,7 @@ export function AIResult({
   const handleNew = onStartNewSubmittal ?? navigateToNewSubmittal;
 
   useEffect(() => {
-    if (!modalMode) return;
+    if (!modalMode || sharedModalShell) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -62,7 +64,7 @@ export function AIResult({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [handleBack, modalMode]);
+  }, [handleBack, modalMode, sharedModalShell]);
 
   if (isLoading) {
     return (
@@ -459,6 +461,27 @@ export function AIResult({
     </div>
   );
 
+  if (modalMode && sharedModalShell) {
+    return (
+      <>
+        <div className="shrink-0 border-b border-[#EEEEEE] bg-white px-6 py-6">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="absolute right-6 top-6 z-10 inline-flex h-4 w-4 items-center justify-center text-[#2A2A2A] transition-opacity hover:opacity-70"
+            aria-label="Close results modal"
+          >
+            <FiX size={16} />
+          </button>
+          <h2 className="pr-10 text-[24px] font-semibold tracking-[-0.48px] text-[#101828]">
+            AI Analysis Results
+          </h2>
+        </div>
+        {content}
+      </>
+    );
+  }
+
   if (modalMode) {
     return (
       <div
@@ -467,7 +490,7 @@ export function AIResult({
         onClick={handleBack}
       >
         <div
-          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)]"
+          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-[max-width,width,transform,opacity] duration-300 ease-out"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="shrink-0 border-b border-[#EEEEEE] bg-white px-6 py-6">

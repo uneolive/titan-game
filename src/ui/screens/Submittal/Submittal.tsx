@@ -9,6 +9,7 @@ import uploadIcon from '@/assets/images/upload-icon.svg';
 
 interface SubmittalProps {
   modalMode?: boolean;
+  sharedModalShell?: boolean;
   onClose?: () => void;
   projectIdOverride?: string;
   onComplete?: (submittalId: string) => void;
@@ -16,6 +17,7 @@ interface SubmittalProps {
 
 export function Submittal({
   modalMode = false,
+  sharedModalShell = false,
   onClose,
   projectIdOverride,
   onComplete,
@@ -117,7 +119,7 @@ export function Submittal({
   const handleClose = onClose ?? navigateBack;
 
   useEffect(() => {
-    if (!modalMode) return;
+    if (!modalMode || sharedModalShell) return;
 
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -134,7 +136,7 @@ export function Submittal({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [handleClose, modalMode]);
+  }, [handleClose, modalMode, sharedModalShell]);
 
   const content = (
     <>
@@ -444,6 +446,10 @@ export function Submittal({
     </>
   );
 
+  if (modalMode && sharedModalShell) {
+    return content;
+  }
+
   return (
     <>
     {modalMode ? (
@@ -452,7 +458,7 @@ export function Submittal({
         onClick={handleClose}
       >
         <div
-          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[800px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-all duration-200"
+          className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-[max-width,width,transform,opacity] duration-300 ease-out"
           onClick={(event) => event.stopPropagation()}
         >
           <button

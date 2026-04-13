@@ -67,6 +67,40 @@ export function ProjectDetail() {
   const pendingDeleteSpecDocument = specificationDocuments.find(
     (document) => document.documentId === pendingDeleteSpecDocumentId
   );
+  const isWorkflowModalOpen = isNewSubmittalModalOpen || Boolean(selectedResultSubmittalId);
+
+  useEffect(() => {
+    if (!isWorkflowModalOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+
+      if (selectedResultSubmittalId) {
+        handleCloseResultModal();
+        return;
+      }
+
+      if (isNewSubmittalModalOpen) {
+        handleCloseNewSubmittalModal();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [
+    handleCloseNewSubmittalModal,
+    handleCloseResultModal,
+    isNewSubmittalModalOpen,
+    isWorkflowModalOpen,
+    selectedResultSubmittalId,
+  ]);
 
   useEffect(() => {
     if (!pendingDeleteSubmittalId) return;
@@ -473,19 +507,6 @@ export function ProjectDetail() {
         />
       )}
 
-      {isNewSubmittalModalOpen && (
-        <Submittal
-          projectIdOverride={projectId!}
-          modalMode
-          onClose={handleCloseNewSubmittalModal}
-          onComplete={async (submittalId) => {
-            await refreshProjectDetails();
-            handleCloseNewSubmittalModal();
-            handleOpenResultModal(submittalId);
-          }}
-        />
-      )}
-
       {isNewSpecManualModalOpen && (
         <SpecificationManual
           projectIdOverride={projectId!}
@@ -498,17 +519,53 @@ export function ProjectDetail() {
         />
       )}
 
-      {selectedResultSubmittalId && (
-        <AIResult
-          projectIdOverride={projectId!}
-          submittalIdOverride={selectedResultSubmittalId}
-          modalMode
-          onClose={handleCloseResultModal}
-          onStartNewSubmittal={() => {
-            handleCloseResultModal();
-            handleNewSubmittal();
+      {isWorkflowModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-stretch justify-center bg-[#101828]/45 p-4"
+          onClick={() => {
+            if (selectedResultSubmittalId) {
+              handleCloseResultModal();
+              return;
+            }
+
+            if (isNewSubmittalModalOpen) {
+              handleCloseNewSubmittalModal();
+            }
           }}
-        />
+        >
+          <div
+            className="relative flex h-[calc(100dvh-32px)] w-full min-w-[400px] max-w-[1100px] flex-col overflow-hidden rounded-[4px] bg-white shadow-[0px_0px_6px_0px_rgba(0,0,0,0.04),0px_2px_6px_0px_rgba(0,0,0,0.1)] transition-[max-width,width,transform,opacity] duration-300 ease-out"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {isNewSubmittalModalOpen ? (
+              <Submittal
+                projectIdOverride={projectId!}
+                modalMode
+                sharedModalShell
+                onClose={handleCloseNewSubmittalModal}
+                onComplete={async (submittalId) => {
+                  await refreshProjectDetails();
+                  handleOpenResultModal(submittalId);
+                  handleCloseNewSubmittalModal();
+                }}
+              />
+            ) : null}
+
+            {selectedResultSubmittalId ? (
+              <AIResult
+                projectIdOverride={projectId!}
+                submittalIdOverride={selectedResultSubmittalId}
+                modalMode
+                sharedModalShell
+                onClose={handleCloseResultModal}
+                onStartNewSubmittal={() => {
+                  handleCloseResultModal();
+                  handleNewSubmittal();
+                }}
+              />
+            ) : null}
+          </div>
+        </div>
       )}
 
       {pendingDeleteSubmittalId && (
