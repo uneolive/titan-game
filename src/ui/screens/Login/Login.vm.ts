@@ -1,24 +1,16 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const LOGIN_PASSWORD = 'lévis';
+
 export function useLogin() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  // SEQ: 2.2 - Call handleEmailChange(value)
-  const handleEmailChange = useCallback((value: string) => {
-    setEmail(value);
-    setEmailError(null);
-    setError(null);
-  }, []);
-
-  // SEQ: 3.2 - Call handlePasswordChange(value)
   const handlePasswordChange = useCallback((value: string) => {
     setPassword(value);
     setPasswordError(null);
@@ -30,30 +22,24 @@ export function useLogin() {
     setShowPassword((prev) => !prev);
   }, []);
 
-  const validateEmail = useCallback((): boolean => {
-    if (!email.includes('@')) {
-      setEmailError('Please enter a valid email address');
-      return false;
-    }
-    return true;
-  }, [email]);
-
   const validatePassword = useCallback((): boolean => {
-    if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+    if (!password) {
+      setPasswordError('Please enter the password');
       return false;
     }
+
+    if (password !== LOGIN_PASSWORD) {
+      setPasswordError('Incorrect password');
+      return false;
+    }
+
     return true;
   }, [password]);
 
-  // SEQ: 5.2 - Call validateForm()
   const validateForm = useCallback((): boolean => {
-    const isEmailValid = validateEmail();
-    const isPasswordValid = validatePassword();
-    return isEmailValid && isPasswordValid;
-  }, [validateEmail, validatePassword]);
+    return validatePassword();
+  }, [validatePassword]);
 
-  // SEQ: 5.3 - Call handleLogin()
   const handleLogin = useCallback(async () => {
     try {
       if (!validateForm()) {
@@ -67,8 +53,8 @@ export function useLogin() {
         'user',
         JSON.stringify({
           userId: 'mock-user-1',
-          email,
-          firstName: 'Demo',
+          email: 'local@submittal-assistant.dev',
+          firstName: 'Local',
           lastName: 'User',
         })
       );
@@ -78,17 +64,14 @@ export function useLogin() {
     } finally {
       setIsLoading(false);
     }
-  }, [email, password, validateForm, navigate]);
+  }, [validateForm, navigate]);
 
   return {
-    email,
     password,
     isLoading,
     error,
     showPassword,
-    emailError,
     passwordError,
-    handleEmailChange,
     handlePasswordChange,
     togglePasswordVisibility,
     handleLogin,

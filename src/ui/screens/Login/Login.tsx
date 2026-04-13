@@ -1,19 +1,15 @@
 import { useLogin } from './Login.vm.ts';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import logoSvg from '@/assets/images/logo.svg';
-import emailIconSvg from '@/assets/images/email-icon.svg';
 import passwordToggleSvg from '@/assets/images/password-toggle.svg';
 
 export function Login() {
   const {
-    email,
     password,
     isLoading,
     error,
     showPassword,
-    emailError,
     passwordError,
-    handleEmailChange,
     handlePasswordChange,
     togglePasswordVisibility,
     handleLogin,
@@ -42,7 +38,9 @@ export function Login() {
             <h2 className="text-xl font-semibold leading-6 tracking-[-0.4px] text-gray-900">
               Login
             </h2>
-            <p className="mt-2 text-sm leading-[21px] text-gray-500">Sign in to your account</p>
+            <p className="mt-2 text-sm leading-[21px] text-gray-500">
+              Enter the password to access the app
+            </p>
           </div>
 
           {error && (
@@ -52,39 +50,6 @@ export function Login() {
           )}
 
           <form onSubmit={handleSubmit} aria-label="User login form">
-            <div className="mb-[21px]">
-              <label
-                htmlFor="email"
-                className="mb-2 block text-xs font-medium leading-[18px] text-gray-900"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <img
-                  src={emailIconSvg}
-                  alt=""
-                  className="pointer-events-none absolute left-[10.5px] top-1/2 h-[14px] w-[14px] -translate-y-1/2"
-                />
-                <input
-                  id="email"
-                  type="text"
-                  value={email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  className={`h-[38.5px] w-full rounded-[10px] border ${
-                    emailError ? 'border-error' : 'border-gray-200'
-                  } bg-white px-[34.8px] text-xs text-gray-900 placeholder-gray-500 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
-                  placeholder="Enter your email"
-                  aria-invalid={!!emailError}
-                  aria-describedby={emailError ? 'email-error' : undefined}
-                />
-              </div>
-              {emailError && (
-                <p id="email-error" className="mt-1 text-xs text-error">
-                  {emailError}
-                </p>
-              )}
-            </div>
-
             <div className="mb-[21px]">
               <label
                 htmlFor="password"
@@ -101,7 +66,7 @@ export function Login() {
                   className={`h-[38.5px] w-full rounded-[10px] border ${
                     passwordError ? 'border-error' : 'border-gray-200'
                   } bg-white px-[10.3px] pr-8 text-xs text-gray-900 placeholder-gray-500 transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
-                  placeholder="Enter your password"
+                  placeholder="Enter the password"
                   aria-invalid={!!passwordError}
                   aria-describedby={passwordError ? 'password-error' : undefined}
                 />
@@ -125,6 +90,8 @@ export function Login() {
                 </p>
               )}
             </div>
+
+            <p className="mb-[21px] text-xs leading-[18px] text-gray-500">Password: lévis</p>
 
             <button
               type="submit"
