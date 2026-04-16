@@ -225,6 +225,19 @@
     oscillator.stop(now + durationMs / 1000);
   }
 
+  function playSeagullKill() {
+    if (sfxMuted) {
+      return;
+    }
+
+    try {
+      seagullKill.currentTime = 0;
+      seagullKill.play().catch(() => {});
+    } catch (_error) {
+      // Ignore audio play failures caused by browser autoplay restrictions.
+    }
+  }
+
   function playBaseExplosion() {
     const context = ensureAudioContext();
     if (!context) {
@@ -413,6 +426,7 @@
       deathStartedAt: 0,
       deathDurationMs: 220,
       baseRotation: 0,
+      deathResolved: false,
       x: spawnX,
       y: -20,
       vx: (dx / length) * speed,
@@ -441,6 +455,7 @@
           deathStartedAt: 0,
           deathDurationMs: 220,
           baseRotation: 0,
+          deathResolved: false,
           x: enemy.x,
           y: enemy.y,
           vx: 68 * direction,
@@ -472,12 +487,7 @@
       });
     }
 
-    try {
-      seagullKill.currentTime = 0;
-      seagullKill.play().catch(() => {});
-    } catch (_error) {
-      // Ignore audio play failures caused by browser autoplay restrictions.
-    }
+    playSeagullKill();
 
     playTone(enemy.kind === 'heavy' ? 160 : 220, 180, 'triangle', 0.04);
     runtime.level = getLevelFromScore(runtime.score);
@@ -500,6 +510,10 @@
   }
 
   function markEnemyDying(enemy, now) {
+    if (!enemy.deathResolved) {
+      destroyEnemy(enemy, now, true);
+      enemy.deathResolved = true;
+    }
     enemy.state = 'dying';
     enemy.deathStartedAt = now;
     enemy.baseRotation = Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2;
@@ -538,6 +552,7 @@
       vx: (dx / length) * PLAYER_MISSILE_SPEED,
       vy: (dy / length) * PLAYER_MISSILE_SPEED,
       exploded: false,
+      spent: false,
       radius: 0,
       maxRadius: SHOT_BLAST_RADIUS,
       growthRate: 180,
@@ -778,6 +793,10 @@
             playTone(190, 260, 'sawtooth', 0.03);
           }
         } else {
+          if (shot.spent) {
+            shot.radius += shot.growthRate * 2.2 * deltaSeconds;
+            return;
+          }
           shot.radius += shot.growthRate * deltaSeconds;
         }
       });
@@ -787,18 +806,23 @@
         if (enemy.state === 'dying') {
           const deathElapsed = timestamp - enemy.deathStartedAt;
           if (deathElapsed >= enemy.deathDurationMs) {
-            destroyEnemy(enemy, timestamp, true);
+            return;
           } else {
             survivingEnemies.push(enemy);
           }
           return;
         }
 
-        const hitByExplosion = runtime.shots.some(
-          (shot) => shot.exploded && distance(enemy.x, enemy.y, shot.x, shot.y) <= shot.radius + enemy.radius
+        const killingShot = runtime.shots.find(
+          (shot) =>
+            shot.exploded &&
+            !shot.spent &&
+            distance(enemy.x, enemy.y, shot.x, shot.y) <= shot.radius + enemy.radius
         );
 
-        if (hitByExplosion) {
+        if (killingShot) {
+          killingShot.spent = true;
+          killingShot.radius = killingShot.maxRadius;
           markEnemyDying(enemy, timestamp);
           survivingEnemies.push(enemy);
           return;
