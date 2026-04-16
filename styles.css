@@ -128,8 +128,8 @@ h1 {
   border: 1px solid rgba(197, 213, 255, 0.12);
   background: rgba(255, 255, 255, 0.03);
   color: #dce6ff;
-  padding: 6px 10px;
-  font-size: 0.8rem;
+  padding: 5px 8px;
+  font-size: 0.76rem;
 }
 
 .choice.active {
@@ -140,7 +140,7 @@ h1 {
 
 .hud-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -157,6 +157,10 @@ h1 {
 .settings-panel {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.settings-panel .choice-row {
   gap: 6px;
 }
 
@@ -272,10 +276,10 @@ h2 {
 
 input[type='range'] {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 760px) {
   .hud-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -285,7 +289,7 @@ input[type='range'] {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .app-shell {
     width: min(100vw - 20px, 1180px);
     padding-top: 18px;

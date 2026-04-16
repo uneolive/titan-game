@@ -33,6 +33,10 @@
   const controlSupport = document.getElementById('controlSupport');
   const powerValue = document.getElementById('powerValue');
   const powerSupport = document.getElementById('powerSupport');
+  const easyButton = document.getElementById('easyButton');
+  const normalButton = document.getElementById('normalButton');
+  const hardButton = document.getElementById('hardButton');
+  const difficultySupport = document.getElementById('difficultySupport');
   const sfxButton = document.getElementById('sfxButton');
   const pauseButton = document.getElementById('pauseButton');
   const mouseModeButton = document.getElementById('mouseModeButton');
@@ -68,6 +72,7 @@
   let audioContext = null;
   let animationFrameId = 0;
   let controlMode = 'mouse';
+  let difficulty = 'normal';
   let keyboardSpeed = 300;
   let sfxMuted = false;
   let musicMuted = false;
@@ -124,6 +129,30 @@
 
   function pickTargetSpriteKey() {
     return targetSpriteKeys[Math.floor(Math.random() * targetSpriteKeys.length)];
+  }
+
+  function getDifficultyConfig() {
+    if (difficulty === 'easy') {
+      return {
+        speedMultiplier: 0.84,
+        spawnMultiplier: 1.22,
+        label: 'Slower threats and longer gaps between volleys.',
+      };
+    }
+
+    if (difficulty === 'hard') {
+      return {
+        speedMultiplier: 1.22,
+        spawnMultiplier: 0.82,
+        label: 'Faster threats and more frequent volleys.',
+      };
+    }
+
+    return {
+      speedMultiplier: 1,
+      spawnMultiplier: 1,
+      label: 'Balanced spawn rate and threat speed.',
+    };
   }
 
   function createHudState(currentRuntime) {
@@ -247,6 +276,7 @@
       controlMode === 'mouse'
         ? `${hud.availableShots} missile slots available`
         : `Reticle speed ${keyboardSpeed}`;
+    difficultySupport.textContent = getDifficultyConfig().label;
     const activeTypes = runtime.activePowerUps
       .filter((power) => power.expiresAt > runtime.loopTimeMs)
       .map((power) => power.type);
@@ -257,6 +287,9 @@
   function updateOverlay() {
     mouseModeButton.classList.toggle('active', controlMode === 'mouse');
     keyboardModeButton.classList.toggle('active', controlMode === 'keyboard');
+    easyButton.classList.toggle('active', difficulty === 'easy');
+    normalButton.classList.toggle('active', difficulty === 'normal');
+    hardButton.classList.toggle('active', difficulty === 'hard');
     sfxButton.classList.toggle('active', !sfxMuted);
     sfxButton.textContent = sfxMuted ? 'SFX Off' : 'SFX On';
     musicButton.classList.toggle('active', !musicMuted);
@@ -368,7 +401,7 @@
     const speedMultiplier =
       kind === 'fast' ? 1.45 : kind === 'heavy' ? 0.8 : kind === 'splitter' ? 1.05 : 1;
     const baseSpeed = 64 + runtime.level * 11;
-    const speed = baseSpeed * speedMultiplier;
+    const speed = baseSpeed * speedMultiplier * getDifficultyConfig().speedMultiplier;
     const palette = enemyPalette[kind];
 
     runtime.enemyId += 1;
@@ -376,6 +409,10 @@
       id: runtime.enemyId,
       kind,
       spriteKey: pickTargetSpriteKey(),
+      state: 'active',
+      deathStartedAt: 0,
+      deathDurationMs: 220,
+      baseRotation: 0,
       x: spawnX,
       y: -20,
       vx: (dx / length) * speed,
@@ -400,6 +437,10 @@
           id: runtime.enemyId,
           kind: 'fast',
           spriteKey: pickTargetSpriteKey(),
+          state: 'active',
+          deathStartedAt: 0,
+          deathDurationMs: 220,
+          baseRotation: 0,
           x: enemy.x,
           y: enemy.y,
           vx: 68 * direction,
@@ -456,6 +497,12 @@
     }
 
     playTone(powerUp.type === 'repair' ? 610 : 450, 220, 'sine', 0.045);
+  }
+
+  function markEnemyDying(enemy, now) {
+    enemy.state = 'dying';
+    enemy.deathStartedAt = now;
+    enemy.baseRotation = Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2;
   }
 
   function fireShot(targetX, targetY, now) {
@@ -601,9 +648,20 @@
       const sprite = sprites[enemy.spriteKey];
       if (sprite.complete) {
         const size = enemy.kind === 'heavy' ? 88 : enemy.kind === 'fast' ? 66 : 76;
+        const spinProgress =
+          enemy.state === 'dying'
+            ? Math.min(1, (runtime.loopTimeMs - enemy.deathStartedAt) / enemy.deathDurationMs)
+            : 0;
+        const rotation =
+          enemy.state === 'dying'
+            ? enemy.baseRotation + spinProgress * Math.PI * 4
+            : Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2;
         ctx.save();
         ctx.translate(enemy.x, enemy.y);
-        ctx.rotate(Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2);
+        ctx.rotate(rotation);
+        if (enemy.state === 'dying') {
+          ctx.globalAlpha = Math.max(0.3, 1 - spinProgress * 0.45);
+        }
         ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
         ctx.restore();
       } else {
@@ -675,7 +733,7 @@
     runtime.lastTimestamp = timestamp;
     runtime.loopTimeMs = timestamp;
 
-    if (phase === 'playing') {
+      if (phase === 'playing') {
       runtime.activePowerUps = runtime.activePowerUps.filter((power) => power.expiresAt > timestamp);
 
       if (controlMode === 'keyboard') {
@@ -686,8 +744,9 @@
       }
 
       const frozen = isPowerUpActive(runtime, 'freeze', timestamp);
-      const enemySpeedFactor = frozen ? 0.42 : 1;
-      const spawnRateFactor = frozen ? 0.78 : 1;
+      const difficultyConfig = getDifficultyConfig();
+      const enemySpeedFactor = (frozen ? 0.42 : 1) * difficultyConfig.speedMultiplier;
+      const spawnRateFactor = (frozen ? 0.78 : 1) * difficultyConfig.spawnMultiplier;
 
       runtime.spawnTimerMs -= deltaMs;
       if (runtime.spawnTimerMs <= 0) {
@@ -696,10 +755,12 @@
         runtime.spawnTimerMs = baseInterval * spawnRateFactor * (0.75 + Math.random() * 0.55);
       }
 
-      runtime.enemies.forEach((enemy) => {
-        enemy.x += enemy.vx * deltaSeconds * enemySpeedFactor;
-        enemy.y += enemy.vy * deltaSeconds * enemySpeedFactor;
-      });
+        runtime.enemies.forEach((enemy) => {
+          if (enemy.state === 'active') {
+            enemy.x += enemy.vx * deltaSeconds * enemySpeedFactor;
+            enemy.y += enemy.vy * deltaSeconds * enemySpeedFactor;
+          }
+        });
 
       runtime.powerUps.forEach((powerUp) => {
         powerUp.y += powerUp.vy * deltaSeconds;
@@ -723,12 +784,23 @@
 
       const survivingEnemies = [];
       runtime.enemies.forEach((enemy) => {
+        if (enemy.state === 'dying') {
+          const deathElapsed = timestamp - enemy.deathStartedAt;
+          if (deathElapsed >= enemy.deathDurationMs) {
+            destroyEnemy(enemy, timestamp, true);
+          } else {
+            survivingEnemies.push(enemy);
+          }
+          return;
+        }
+
         const hitByExplosion = runtime.shots.some(
           (shot) => shot.exploded && distance(enemy.x, enemy.y, shot.x, shot.y) <= shot.radius + enemy.radius
         );
 
         if (hitByExplosion) {
-          destroyEnemy(enemy, timestamp, true);
+          markEnemyDying(enemy, timestamp);
+          survivingEnemies.push(enemy);
           return;
         }
 
@@ -833,6 +905,24 @@
 
   keyboardModeButton.addEventListener('click', () => {
     controlMode = 'keyboard';
+    syncHud();
+    updateOverlay();
+  });
+
+  easyButton.addEventListener('click', () => {
+    difficulty = 'easy';
+    syncHud();
+    updateOverlay();
+  });
+
+  normalButton.addEventListener('click', () => {
+    difficulty = 'normal';
+    syncHud();
+    updateOverlay();
+  });
+
+  hardButton.addEventListener('click', () => {
+    difficulty = 'hard';
     syncHud();
     updateOverlay();
   });

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Titan Command</title>
+    <link rel="icon" type="image/png" href="./assets/team-titan-emblem.png" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -42,6 +43,15 @@
           <span class="label">Power Grid</span>
           <strong id="powerValue" class="value">0</strong>
           <p id="powerSupport" class="support">No active boosts</p>
+        </article>
+        <article class="panel settings-panel">
+          <span class="label">Difficulty</span>
+          <div class="choice-row">
+            <button id="easyButton" class="choice" type="button">Easy</button>
+            <button id="normalButton" class="choice active" type="button">Normal</button>
+            <button id="hardButton" class="choice" type="button">Hard</button>
+          </div>
+          <p id="difficultySupport" class="support">Balanced spawn rate and threat speed.</p>
         </article>
         <article class="panel settings-panel">
           <span class="label">Controls</span>
