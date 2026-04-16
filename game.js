@@ -9,6 +9,8 @@
   const SHOT_BLAST_RADIUS = 68;
   const POWER_UP_DURATION_MS = 6500;
   const HUD_UPDATE_MS = 90;
+  const BASE_IMAGE_WIDTH_SCALE = 0.72;
+  const BASE_IMAGE_LAUNCH_OFFSET = 10;
 
   const enemyPalette = {
     standard: { color: '#ff815f', trail: 'rgba(255, 129, 95, 0.26)', points: 100 },
@@ -21,6 +23,8 @@
     repair: { color: '#86ffb6', label: 'Repair' },
     freeze: { color: '#83d6ff', label: 'Freeze' },
     rapid: { color: '#ffd062', label: 'Rapid' },
+    double: { color: '#ffb86a', label: 'Double' },
+    nuke: { color: '#ff8db8', label: 'Nuke' },
   };
 
   const targetSpriteKeys = ['nicolas', 'pascale', 'phil', 'kevan', 'eliza', 'newTarget'];
@@ -42,6 +46,7 @@
   const mouseModeButton = document.getElementById('mouseModeButton');
   const keyboardModeButton = document.getElementById('keyboardModeButton');
   const musicButton = document.getElementById('musicButton');
+  const speedControl = document.getElementById('speedControl');
   const speedSlider = document.getElementById('speedSlider');
   const speedValue = document.getElementById('speedValue');
   const startButton = document.getElementById('startButton');
@@ -59,6 +64,7 @@
 
   const sprites = {
     fire: createImage('./assets/newforma-fire.png'),
+    base: createImage('./assets/base-target.png'),
     nicolas: createImage('./assets/nicolas.png'),
     pascale: createImage('./assets/pascale.png'),
     phil: createImage('./assets/phil.png'),
@@ -117,6 +123,7 @@
       reticleX: ARENA_WIDTH / 2,
       reticleY: ARENA_HEIGHT / 2,
       spawnTimerMs: 900,
+      powerUpSpawnTimerMs: 5200,
       lastTimestamp: 0,
       lastShotAt: -9999,
       lastHudAt: 0,
@@ -171,6 +178,19 @@
     return candidates.reduce((closest, candidate) => {
       return Math.abs(candidate.x - x) < Math.abs(closest.x - x) ? candidate : closest;
     }, candidates[0]);
+  }
+
+  function getBaseImageSize(base) {
+    const sprite = sprites.base;
+    const width = base.width * BASE_IMAGE_WIDTH_SCALE;
+    const aspectRatio = sprite && sprite.complete && sprite.naturalWidth > 0 ? sprite.naturalHeight / sprite.naturalWidth : 1;
+    const height = width * aspectRatio;
+    return { width, height };
+  }
+
+  function getBaseLaunchY(base) {
+    const { height } = getBaseImageSize(base);
+    return BASE_Y - height + BASE_IMAGE_LAUNCH_OFFSET;
   }
 
   function getAvailableShots(currentRuntime) {
@@ -300,6 +320,7 @@
   function updateOverlay() {
     mouseModeButton.classList.toggle('active', controlMode === 'mouse');
     keyboardModeButton.classList.toggle('active', controlMode === 'keyboard');
+    speedControl.classList.toggle('hidden', controlMode !== 'keyboard');
     easyButton.classList.toggle('active', difficulty === 'easy');
     normalButton.classList.toggle('active', difficulty === 'normal');
     hardButton.classList.toggle('active', difficulty === 'hard');
@@ -471,27 +492,48 @@
       });
     }
 
-    if (Math.random() < 0.1) {
-      const type = Math.random() > 0.66 ? 'repair' : Math.random() > 0.45 ? 'rapid' : 'freeze';
-      const meta = powerUpMeta[type];
-      runtime.powerUpId += 1;
-      runtime.powerUps.push({
-        id: runtime.powerUpId,
-        type,
-        x: enemy.x,
-        y: enemy.y,
-        radius: 14,
-        vy: 48,
-        color: meta.color,
-        label: meta.label,
-      });
-    }
-
     playSeagullKill();
 
     playTone(enemy.kind === 'heavy' ? 160 : 220, 180, 'triangle', 0.04);
     runtime.level = getLevelFromScore(runtime.score);
     runtime.activePowerUps = runtime.activePowerUps.filter((power) => power.expiresAt > now);
+  }
+
+  function spawnIndependentPowerUp() {
+    const dropRoll = Math.random();
+    const type =
+      dropRoll > 0.88
+        ? 'nuke'
+        : dropRoll > 0.68
+          ? 'repair'
+          : dropRoll > 0.46
+            ? 'double'
+            : dropRoll > 0.24
+              ? 'rapid'
+              : 'freeze';
+    const meta = powerUpMeta[type];
+    runtime.powerUpId += 1;
+    runtime.powerUps.push({
+      id: runtime.powerUpId,
+      type,
+      x: 70 + Math.random() * (ARENA_WIDTH - 140),
+      y: -18,
+      radius: 16,
+      vy: 52 + Math.random() * 22,
+      color: meta.color,
+      label: meta.label,
+    });
+  }
+
+  function triggerNuke(now) {
+    runtime.enemies.forEach((enemy) => {
+      if (enemy.state === 'active') {
+        markEnemyDying(enemy, now);
+      }
+    });
+
+    playTone(180, 180, 'square', 0.05);
+    playTone(72, 680, 'sawtooth', 0.08);
   }
 
   function activatePowerUp(powerUp, now) {
@@ -502,11 +544,18 @@
       if (destroyedBase) {
         destroyedBase.hp = 1;
       }
+    } else if (powerUp.type === 'nuke') {
+      triggerNuke(now);
     } else {
       runtime.activePowerUps.push({ type: powerUp.type, expiresAt: now + POWER_UP_DURATION_MS });
     }
 
-    playTone(powerUp.type === 'repair' ? 610 : 450, 220, 'sine', 0.045);
+    playTone(
+      powerUp.type === 'repair' ? 610 : powerUp.type === 'nuke' ? 300 : powerUp.type === 'double' ? 520 : 450,
+      220,
+      'sine',
+      0.045
+    );
   }
 
   function markEnemyDying(enemy, now) {
@@ -537,25 +586,34 @@
 
     const launchBase = findClosestAliveBase(runtime.bases, targetX);
     const originX = launchBase.x;
-    const originY = BASE_Y - 12;
+    const originY = getBaseLaunchY(launchBase);
     const dx = targetX - originX;
     const dy = targetY - originY;
     const length = Math.max(1, Math.hypot(dx, dy));
 
-    runtime.shotId += 1;
-    runtime.shots.push({
-      id: runtime.shotId,
-      x: originX,
-      y: originY,
-      targetX,
-      targetY,
-      vx: (dx / length) * PLAYER_MISSILE_SPEED,
-      vy: (dy / length) * PLAYER_MISSILE_SPEED,
-      exploded: false,
-      spent: false,
-      radius: 0,
-      maxRadius: SHOT_BLAST_RADIUS,
-      growthRate: 180,
+    const spreadMode = isPowerUpActive(runtime, 'double', now);
+    const offsets = spreadMode ? [-18, 18] : [0];
+
+    offsets.forEach((offset) => {
+      const adjustedTargetX = targetX + offset;
+      const adjustedDx = adjustedTargetX - originX;
+      const adjustedLength = Math.max(1, Math.hypot(adjustedDx, dy));
+
+      runtime.shotId += 1;
+      runtime.shots.push({
+        id: runtime.shotId,
+        x: originX,
+        y: originY,
+        targetX: adjustedTargetX,
+        targetY,
+        vx: (adjustedDx / adjustedLength) * PLAYER_MISSILE_SPEED,
+        vy: (dy / adjustedLength) * PLAYER_MISSILE_SPEED,
+        exploded: false,
+        spent: false,
+        radius: 0,
+        maxRadius: SHOT_BLAST_RADIUS,
+        growthRate: 180,
+      });
     });
     runtime.lastShotAt = now;
     playTone(550, 110, 'square', 0.035);
@@ -614,23 +672,21 @@
     runtime.bases.forEach((base) => {
       ctx.save();
       ctx.translate(base.x, BASE_Y);
-      ctx.fillStyle = base.hp > 0 ? '#8d97b8' : '#494d5a';
-      ctx.strokeStyle = base.hp > 0 ? '#d7ddf0' : '#676c79';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(-base.width / 2, -16, base.width, 16, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = base.hp > 0 ? 'rgba(215, 221, 240, 0.16)' : 'rgba(98, 108, 129, 0.14)';
-      ctx.beginPath();
-      ctx.arc(0, -18, base.width * 0.28, Math.PI, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = base.hp > 0 ? '#f1f3fa' : '#b6bccf';
-      ctx.font = '600 14px ui-sans-serif, system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`B${base.id}`, 0, -4);
+      if (sprites.base.complete) {
+        const { width, height } = getBaseImageSize(base);
+        if (base.hp === 0) {
+          ctx.globalAlpha = 0.35;
+        }
+        ctx.drawImage(sprites.base, -width / 2, -height + 8, width, height);
+      } else {
+        ctx.fillStyle = base.hp > 0 ? '#8d97b8' : '#494d5a';
+        ctx.strokeStyle = base.hp > 0 ? '#d7ddf0' : '#676c79';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-base.width / 2, -16, base.width, 16, 8);
+        ctx.fill();
+        ctx.stroke();
+      }
 
       ctx.font = '600 12px ui-sans-serif, system-ui, sans-serif';
       ctx.fillStyle = base.hp > 0 ? '#dfe5f8' : '#b28484';
@@ -768,6 +824,13 @@
         spawnEnemy();
         const baseInterval = Math.max(210, 920 - runtime.level * 65);
         runtime.spawnTimerMs = baseInterval * spawnRateFactor * (0.75 + Math.random() * 0.55);
+      }
+
+      runtime.powerUpSpawnTimerMs -= deltaMs;
+      if (runtime.powerUpSpawnTimerMs <= 0) {
+        spawnIndependentPowerUp();
+        const basePowerUpInterval = 5600 - Math.min(runtime.level * 140, 1800);
+        runtime.powerUpSpawnTimerMs = basePowerUpInterval * (0.9 + Math.random() * 0.45);
       }
 
         runtime.enemies.forEach((enemy) => {

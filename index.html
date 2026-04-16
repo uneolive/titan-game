@@ -59,11 +59,13 @@
             <button id="mouseModeButton" class="choice active" type="button">Mouse Aim</button>
             <button id="keyboardModeButton" class="choice" type="button">Keyboard Aim</button>
           </div>
-          <div class="slider-row">
+          <div id="speedControl" class="slider-block">
+            <div class="slider-row">
             <span class="support">Reticle speed</span>
             <strong id="speedValue" class="mini-value">300</strong>
+            </div>
+            <input id="speedSlider" type="range" min="180" max="520" step="20" value="300" />
           </div>
-          <input id="speedSlider" type="range" min="180" max="520" step="20" value="300" />
         </article>
       </section>
 

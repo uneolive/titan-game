@@ -160,6 +160,10 @@ h1 {
   gap: 6px;
 }
 
+.slider-block.hidden {
+  display: none;
+}
+
 .settings-panel .choice-row {
   gap: 6px;
 }
