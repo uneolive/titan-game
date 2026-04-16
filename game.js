@@ -1,7 +1,7 @@
 (function () {
   const ARENA_WIDTH = 960;
   const ARENA_HEIGHT = 640;
-  const BASE_Y = ARENA_HEIGHT - 16;
+  const BASE_Y = ARENA_HEIGHT - 24;
   const PLAYER_MISSILE_SPEED = 430;
   const MOUSE_FIRE_COOLDOWN_MS = 350;
   const KEYBOARD_FIRE_COOLDOWN_MS = 220;
@@ -23,7 +23,7 @@
     rapid: { color: '#ffd062', label: 'Rapid' },
   };
 
-  const targetSpriteKeys = ['nicolas', 'pascale', 'phil', 'kevan', 'eliza'];
+  const targetSpriteKeys = ['nicolas', 'pascale', 'phil', 'kevan', 'eliza', 'newTarget'];
 
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
@@ -33,6 +33,7 @@
   const controlSupport = document.getElementById('controlSupport');
   const powerValue = document.getElementById('powerValue');
   const powerSupport = document.getElementById('powerSupport');
+  const sfxButton = document.getElementById('sfxButton');
   const pauseButton = document.getElementById('pauseButton');
   const mouseModeButton = document.getElementById('mouseModeButton');
   const keyboardModeButton = document.getElementById('keyboardModeButton');
@@ -59,6 +60,7 @@
     phil: createImage('./assets/phil.png'),
     kevan: createImage('./assets/kevan.png'),
     eliza: createImage('./assets/eliza.png'),
+    newTarget: createImage('./assets/new-target.png'),
     emblem: createImage('./assets/team-titan-emblem.png'),
     background: createImage('./assets/space-background.jpg'),
   };
@@ -67,6 +69,7 @@
   let animationFrameId = 0;
   let controlMode = 'mouse';
   let keyboardSpeed = 300;
+  let sfxMuted = false;
   let musicMuted = false;
   let phase = 'menu';
   let gameOverSummary = null;
@@ -157,6 +160,9 @@
   }
 
   function ensureAudioContext() {
+    if (sfxMuted) {
+      return null;
+    }
     if (!audioContext) {
       const AudioCtor = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtor) {
@@ -190,6 +196,49 @@
     oscillator.stop(now + durationMs / 1000);
   }
 
+  function playBaseExplosion() {
+    const context = ensureAudioContext();
+    if (!context) {
+      return;
+    }
+
+    const durationSeconds = 1.35;
+    const sampleRate = context.sampleRate;
+    const frameCount = Math.floor(sampleRate * durationSeconds);
+    const buffer = context.createBuffer(1, frameCount, sampleRate);
+    const channel = buffer.getChannelData(0);
+
+    for (let index = 0; index < frameCount; index += 1) {
+      const progress = index / frameCount;
+      const decay = Math.pow(1 - progress, 1.35);
+      const rumble = Math.sin(progress * 56 * Math.PI) * 0.34 * (1 - progress * 0.7);
+      const crack = Math.sin(progress * 8 * Math.PI) * 0.18 * (1 - progress);
+      channel[index] = ((Math.random() * 2 - 1) * 1.08 + rumble + crack) * decay;
+    }
+
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const gain = context.createGain();
+    const now = context.currentTime;
+
+    source.buffer = buffer;
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(1700, now);
+    filter.frequency.exponentialRampToValueAtTime(60, now + durationSeconds);
+    gain.gain.setValueAtTime(0.9, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(context.destination);
+    source.start(now);
+    source.stop(now + durationSeconds);
+
+    playTone(62, 760, 'sawtooth', 0.09);
+    playTone(36, 1200, 'triangle', 0.075);
+    playTone(24, 1450, 'sine', 0.05);
+  }
+
   function syncHud() {
     hud = createHudState(runtime);
     scoreValue.textContent = runtime.score.toLocaleString();
@@ -206,18 +255,22 @@
   }
 
   function updateOverlay() {
+    mouseModeButton.classList.toggle('active', controlMode === 'mouse');
+    keyboardModeButton.classList.toggle('active', controlMode === 'keyboard');
+    sfxButton.classList.toggle('active', !sfxMuted);
+    sfxButton.textContent = sfxMuted ? 'SFX Off' : 'SFX On';
+    musicButton.classList.toggle('active', !musicMuted);
+    musicButton.textContent = musicMuted ? 'Music Off' : 'Music On';
+    speedValue.textContent = String(keyboardSpeed);
+    speedSlider.value = String(keyboardSpeed);
+    pauseButton.textContent = phase === 'paused' ? 'Resume' : 'Pause';
+
     if (phase === 'playing') {
       overlay.classList.add('hidden');
       return;
     }
 
     overlay.classList.remove('hidden');
-    mouseModeButton.classList.toggle('active', controlMode === 'mouse');
-    keyboardModeButton.classList.toggle('active', controlMode === 'keyboard');
-    musicButton.classList.toggle('active', !musicMuted);
-    musicButton.textContent = musicMuted ? 'Music Off' : 'Music On';
-    speedValue.textContent = String(keyboardSpeed);
-    speedSlider.value = String(keyboardSpeed);
 
     if (phase === 'paused') {
       dialogEyebrow.textContent = 'Titan Network';
@@ -241,7 +294,6 @@
         'Click to fire in mouse mode. In keyboard mode, move then press space or enter.';
       startButton.textContent = 'Start Game';
     }
-    pauseButton.textContent = phase === 'paused' ? 'Resume' : 'Pause';
   }
 
   function syncMusic() {
@@ -520,7 +572,7 @@
 
       ctx.font = '600 12px ui-sans-serif, system-ui, sans-serif';
       ctx.fillStyle = base.hp > 0 ? '#dfe5f8' : '#b28484';
-      ctx.fillText(base.hp > 0 ? 'Online' : 'Destroyed', 0, 18);
+      ctx.fillText(base.hp > 0 ? 'Online' : 'Destroyed', 0, 14);
       ctx.restore();
     });
 
@@ -689,8 +741,13 @@
         );
 
         if (baseHit) {
+          const wasAlive = baseHit.hp > 0;
           baseHit.hp = Math.max(0, baseHit.hp - enemy.damage);
-          playTone(110, 260, 'square', 0.05);
+          if (wasAlive && baseHit.hp === 0) {
+            playBaseExplosion();
+          } else {
+            playTone(110, 260, 'square', 0.05);
+          }
           return;
         }
 
@@ -789,6 +846,11 @@
   musicButton.addEventListener('click', () => {
     musicMuted = !musicMuted;
     syncMusic();
+    updateOverlay();
+  });
+
+  sfxButton.addEventListener('click', () => {
+    sfxMuted = !sfxMuted;
     updateOverlay();
   });
 
