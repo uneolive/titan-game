@@ -55,7 +55,7 @@
   const dialogDescription = document.getElementById('dialogDescription');
   const dialogTip = document.getElementById('dialogTip');
 
-  const theme = new Audio('./assets/showdown-theme.wav');
+  const theme = new Audio('./assets/007-watch-theme.mp3');
   theme.loop = true;
   theme.volume = 0.28;
   const seagullKill = new Audio('./assets/seagull-kill.mp3');
