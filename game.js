@@ -1,7 +1,7 @@
 (function () {
   const ARENA_WIDTH = 960;
   const ARENA_HEIGHT = 640;
-  const BASE_Y = ARENA_HEIGHT - 34;
+  const BASE_Y = ARENA_HEIGHT - 16;
   const PLAYER_MISSILE_SPEED = 430;
   const MOUSE_FIRE_COOLDOWN_MS = 350;
   const KEYBOARD_FIRE_COOLDOWN_MS = 220;
@@ -23,24 +23,23 @@
     rapid: { color: '#ffd062', label: 'Rapid' },
   };
 
+  const targetSpriteKeys = ['nicolas', 'pascale', 'phil', 'kevan', 'eliza'];
+
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const overlay = document.getElementById('overlay');
   const scoreValue = document.getElementById('scoreValue');
   const levelValue = document.getElementById('levelValue');
   const controlSupport = document.getElementById('controlSupport');
-  const baseStatus = document.getElementById('baseStatus');
   const powerValue = document.getElementById('powerValue');
   const powerSupport = document.getElementById('powerSupport');
-  const menuButton = document.getElementById('menuButton');
-  const powerDownButton = document.getElementById('powerDownButton');
+  const pauseButton = document.getElementById('pauseButton');
   const mouseModeButton = document.getElementById('mouseModeButton');
   const keyboardModeButton = document.getElementById('keyboardModeButton');
+  const musicButton = document.getElementById('musicButton');
   const speedSlider = document.getElementById('speedSlider');
   const speedValue = document.getElementById('speedValue');
-  const soundButton = document.getElementById('soundButton');
   const startButton = document.getElementById('startButton');
-  const stopButton = document.getElementById('stopButton');
   const dialogEyebrow = document.getElementById('dialogEyebrow');
   const dialogTitle = document.getElementById('dialogTitle');
   const dialogDescription = document.getElementById('dialogDescription');
@@ -49,23 +48,27 @@
   const theme = new Audio('./assets/showdown-theme.wav');
   theme.loop = true;
   theme.volume = 0.28;
+  const seagullKill = new Audio('./assets/seagull-kill.mp3');
+  seagullKill.preload = 'auto';
+  seagullKill.volume = 0.9;
 
   const sprites = {
     fire: createImage('./assets/newforma-fire.png'),
-    standard: createImage('./assets/garbage.png'),
-    fast: createImage('./assets/knife.png'),
-    heavy: createImage('./assets/rocket-mike.png'),
-    splitter: createImage('./assets/hockey-mask.png'),
+    nicolas: createImage('./assets/nicolas.png'),
+    pascale: createImage('./assets/pascale.png'),
+    phil: createImage('./assets/phil.png'),
+    kevan: createImage('./assets/kevan.png'),
+    eliza: createImage('./assets/eliza.png'),
     emblem: createImage('./assets/team-titan-emblem.png'),
+    background: createImage('./assets/space-background.jpg'),
   };
 
   let audioContext = null;
   let animationFrameId = 0;
   let controlMode = 'mouse';
   let keyboardSpeed = 300;
-  let soundEnabled = true;
+  let musicMuted = false;
   let phase = 'menu';
-  let sessionStopped = false;
   let gameOverSummary = null;
   const input = new Set();
 
@@ -116,6 +119,10 @@
     };
   }
 
+  function pickTargetSpriteKey() {
+    return targetSpriteKeys[Math.floor(Math.random() * targetSpriteKeys.length)];
+  }
+
   function createHudState(currentRuntime) {
     return {
       score: currentRuntime.score,
@@ -150,9 +157,6 @@
   }
 
   function ensureAudioContext() {
-    if (!soundEnabled) {
-      return null;
-    }
     if (!audioContext) {
       const AudioCtor = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtor) {
@@ -194,13 +198,6 @@
       controlMode === 'mouse'
         ? `${hud.availableShots} missile slots available`
         : `Reticle speed ${keyboardSpeed}`;
-    baseStatus.innerHTML = '';
-    hud.bases.forEach((base) => {
-      const pill = document.createElement('span');
-      pill.className = `pill ${base.hp > 0 ? '' : 'down'}`.trim();
-      pill.textContent = `Base ${base.id}: ${base.hp > 0 ? 'Online' : 'Destroyed'}`;
-      baseStatus.appendChild(pill);
-    });
     const activeTypes = runtime.activePowerUps
       .filter((power) => power.expiresAt > runtime.loopTimeMs)
       .map((power) => power.type);
@@ -217,61 +214,45 @@
     overlay.classList.remove('hidden');
     mouseModeButton.classList.toggle('active', controlMode === 'mouse');
     keyboardModeButton.classList.toggle('active', controlMode === 'keyboard');
-    soundButton.classList.toggle('active', soundEnabled);
-    soundButton.textContent = soundEnabled ? 'Sound On' : 'Sound Off';
+    musicButton.classList.toggle('active', !musicMuted);
+    musicButton.textContent = musicMuted ? 'Music Off' : 'Music On';
     speedValue.textContent = String(keyboardSpeed);
     speedSlider.value = String(keyboardSpeed);
 
-    if (sessionStopped) {
-      dialogEyebrow.textContent = 'Session Offline';
-      dialogTitle.textContent = 'Command deck powered down';
+    if (phase === 'paused') {
+      dialogEyebrow.textContent = 'Titan Network';
+      dialogTitle.textContent = 'Simulation paused';
       dialogDescription.textContent =
-        'The simulation is stopped. Start again when you want to bring the defense grid back online.';
-      dialogTip.textContent = 'Power Down stops the current run without closing the tab.';
-      startButton.textContent = 'Restart Session';
-      stopButton.textContent = 'Stay Offline';
+        'Resume when you are ready. Control settings remain available in the top panel.';
+      dialogTip.textContent = 'Use Pause again or press Resume to continue the current run.';
+      startButton.textContent = 'Resume';
     } else if (phase === 'gameOver') {
       dialogEyebrow.textContent = 'Titan Network';
       dialogTitle.textContent = 'Titan base destroyed';
       dialogDescription.textContent = `Final score ${gameOverSummary.score}. Threat level ${gameOverSummary.level}.`;
       dialogTip.textContent = 'Replay instantly or quit back to the menu.';
       startButton.textContent = 'Replay';
-      stopButton.textContent = 'Stop Session';
     } else {
       dialogEyebrow.textContent = 'Titan Network';
       dialogTitle.textContent = 'Initialize defense grid';
       dialogDescription.textContent =
-        'Pick your control scheme, arm the launchers, and hold the line against incoming bombardment.';
+        'Pick your control scheme from the top controls, arm the launchers, and hold the line against incoming bombardment.';
       dialogTip.textContent =
         'Click to fire in mouse mode. In keyboard mode, move then press space or enter.';
       startButton.textContent = 'Start Game';
-      stopButton.textContent = 'Stop Session';
     }
+    pauseButton.textContent = phase === 'paused' ? 'Resume' : 'Pause';
   }
 
-  function setSoundEnabled(nextValue) {
-    soundEnabled = nextValue;
-    if (soundEnabled && phase === 'playing') {
+  function syncMusic() {
+    if (!musicMuted && phase === 'playing') {
       theme.play().catch(() => {});
     } else {
       theme.pause();
     }
-    updateOverlay();
-  }
-
-  function stopSession() {
-    sessionStopped = true;
-    phase = 'menu';
-    runtime = createRuntime();
-    gameOverSummary = null;
-    theme.pause();
-    theme.currentTime = 0;
-    syncHud();
-    updateOverlay();
   }
 
   function returnToMenu() {
-    sessionStopped = false;
     phase = 'menu';
     runtime = createRuntime();
     gameOverSummary = null;
@@ -282,15 +263,34 @@
   }
 
   function startGame() {
-    sessionStopped = false;
+    if (phase === 'paused') {
+      phase = 'playing';
+      syncMusic();
+      updateOverlay();
+      return;
+    }
+
     runtime = createRuntime();
     phase = 'playing';
     gameOverSummary = null;
     syncHud();
     updateOverlay();
-    if (soundEnabled) {
-      theme.currentTime = 0;
-      theme.play().catch(() => {});
+    theme.currentTime = 0;
+    syncMusic();
+  }
+
+  function togglePause() {
+    if (phase === 'playing') {
+      phase = 'paused';
+      theme.pause();
+      updateOverlay();
+      return;
+    }
+
+    if (phase === 'paused') {
+      phase = 'playing';
+      syncMusic();
+      updateOverlay();
     }
   }
 
@@ -323,6 +323,7 @@
     runtime.enemies.push({
       id: runtime.enemyId,
       kind,
+      spriteKey: pickTargetSpriteKey(),
       x: spawnX,
       y: -20,
       vx: (dx / length) * speed,
@@ -346,6 +347,7 @@
         runtime.enemies.push({
           id: runtime.enemyId,
           kind: 'fast',
+          spriteKey: pickTargetSpriteKey(),
           x: enemy.x,
           y: enemy.y,
           vx: 68 * direction,
@@ -375,6 +377,13 @@
         color: meta.color,
         label: meta.label,
       });
+    }
+
+    try {
+      seagullKill.currentTime = 0;
+      seagullKill.play().catch(() => {});
+    } catch (_error) {
+      // Ignore audio play failures caused by browser autoplay restrictions.
     }
 
     playTone(enemy.kind === 'heavy' ? 160 : 220, 180, 'triangle', 0.04);
@@ -452,32 +461,38 @@
   function drawScene() {
     ctx.clearRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
 
-    const skyGradient = ctx.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
-    skyGradient.addColorStop(0, '#03101a');
-    skyGradient.addColorStop(0.58, '#0a2234');
-    skyGradient.addColorStop(1, '#08121a');
-    ctx.fillStyle = skyGradient;
-    ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+    if (sprites.background.complete) {
+      ctx.drawImage(sprites.background, 0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+      ctx.fillStyle = 'rgba(2, 8, 18, 0.38)';
+      ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
+    } else {
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, ARENA_HEIGHT);
+      skyGradient.addColorStop(0, '#03101a');
+      skyGradient.addColorStop(0.58, '#0a2234');
+      skyGradient.addColorStop(1, '#08121a');
+      ctx.fillStyle = skyGradient;
+      ctx.fillRect(0, 0, ARENA_WIDTH, ARENA_HEIGHT);
 
-    for (let index = 0; index < 60; index += 1) {
-      const starX = ((index * 97) % ARENA_WIDTH) + ((runtime.loopTimeMs * 0.004) % 12);
-      const starY = (index * 43) % (ARENA_HEIGHT - 120);
-      const size = index % 6 === 0 ? 2 : 1;
-      ctx.fillStyle = index % 8 === 0 ? 'rgba(255,245,190,0.9)' : 'rgba(186,213,255,0.8)';
-      ctx.fillRect(starX % ARENA_WIDTH, starY, size, size);
+      for (let index = 0; index < 60; index += 1) {
+        const starX = ((index * 97) % ARENA_WIDTH) + ((runtime.loopTimeMs * 0.004) % 12);
+        const starY = (index * 43) % (ARENA_HEIGHT - 120);
+        const size = index % 6 === 0 ? 2 : 1;
+        ctx.fillStyle = index % 8 === 0 ? 'rgba(255,245,190,0.9)' : 'rgba(186,213,255,0.8)';
+        ctx.fillRect(starX % ARENA_WIDTH, starY, size, size);
+      }
     }
 
-    ctx.fillStyle = '#0e2334';
+    ctx.fillStyle = '#111318';
     ctx.beginPath();
     ctx.moveTo(0, ARENA_HEIGHT);
-    ctx.lineTo(0, ARENA_HEIGHT - 110);
-    ctx.lineTo(130, ARENA_HEIGHT - 150);
-    ctx.lineTo(270, ARENA_HEIGHT - 122);
-    ctx.lineTo(380, ARENA_HEIGHT - 170);
-    ctx.lineTo(530, ARENA_HEIGHT - 126);
-    ctx.lineTo(700, ARENA_HEIGHT - 165);
-    ctx.lineTo(860, ARENA_HEIGHT - 126);
-    ctx.lineTo(ARENA_WIDTH, ARENA_HEIGHT - 145);
+    ctx.lineTo(0, ARENA_HEIGHT - 68);
+    ctx.lineTo(130, ARENA_HEIGHT - 94);
+    ctx.lineTo(270, ARENA_HEIGHT - 76);
+    ctx.lineTo(380, ARENA_HEIGHT - 108);
+    ctx.lineTo(530, ARENA_HEIGHT - 80);
+    ctx.lineTo(700, ARENA_HEIGHT - 104);
+    ctx.lineTo(860, ARENA_HEIGHT - 78);
+    ctx.lineTo(ARENA_WIDTH, ARENA_HEIGHT - 92);
     ctx.lineTo(ARENA_WIDTH, ARENA_HEIGHT);
     ctx.closePath();
     ctx.fill();
@@ -485,23 +500,27 @@
     runtime.bases.forEach((base) => {
       ctx.save();
       ctx.translate(base.x, BASE_Y);
-      ctx.fillStyle = base.hp > 0 ? '#7de5ff' : '#5a6279';
-      ctx.strokeStyle = base.hp > 0 ? '#d8f8ff' : '#747d97';
+      ctx.fillStyle = base.hp > 0 ? '#8d97b8' : '#494d5a';
+      ctx.strokeStyle = base.hp > 0 ? '#d7ddf0' : '#676c79';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(-base.width / 2, -20, base.width, 20, 8);
+      ctx.roundRect(-base.width / 2, -16, base.width, 16, 8);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = base.hp > 0 ? 'rgba(125, 229, 255, 0.2)' : 'rgba(98, 108, 129, 0.16)';
+      ctx.fillStyle = base.hp > 0 ? 'rgba(215, 221, 240, 0.16)' : 'rgba(98, 108, 129, 0.14)';
       ctx.beginPath();
-      ctx.arc(0, -24, base.width * 0.34, Math.PI, Math.PI * 2);
+      ctx.arc(0, -18, base.width * 0.28, Math.PI, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = base.hp > 0 ? '#eefcff' : '#ced4e6';
+      ctx.fillStyle = base.hp > 0 ? '#f1f3fa' : '#b6bccf';
       ctx.font = '600 14px ui-sans-serif, system-ui, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`B${base.id}`, 0, -6);
+      ctx.fillText(`B${base.id}`, 0, -4);
+
+      ctx.font = '600 12px ui-sans-serif, system-ui, sans-serif';
+      ctx.fillStyle = base.hp > 0 ? '#dfe5f8' : '#b28484';
+      ctx.fillText(base.hp > 0 ? 'Online' : 'Destroyed', 0, 18);
       ctx.restore();
     });
 
@@ -527,12 +546,12 @@
       ctx.lineTo(enemy.x + enemy.vx * 0.08, enemy.y + enemy.vy * 0.08);
       ctx.stroke();
 
-      const sprite = sprites[enemy.kind];
+      const sprite = sprites[enemy.spriteKey];
       if (sprite.complete) {
-        const size = enemy.kind === 'heavy' ? 42 : enemy.kind === 'fast' ? 28 : 34;
+        const size = enemy.kind === 'heavy' ? 88 : enemy.kind === 'fast' ? 66 : 76;
         ctx.save();
         ctx.translate(enemy.x, enemy.y);
-        ctx.rotate(Math.atan2(enemy.vy, enemy.vx) + Math.PI / 2);
+        ctx.rotate(Math.atan2(enemy.vy, enemy.vx) - Math.PI / 2);
         ctx.drawImage(sprite, -size / 2, -size / 2, size, size);
         ctx.restore();
       } else {
@@ -767,14 +786,14 @@
     syncHud();
   });
 
-  soundButton.addEventListener('click', () => {
-    setSoundEnabled(!soundEnabled);
+  musicButton.addEventListener('click', () => {
+    musicMuted = !musicMuted;
+    syncMusic();
+    updateOverlay();
   });
 
+  pauseButton.addEventListener('click', togglePause);
   startButton.addEventListener('click', startGame);
-  stopButton.addEventListener('click', stopSession);
-  menuButton.addEventListener('click', returnToMenu);
-  powerDownButton.addEventListener('click', stopSession);
 
   syncHud();
   updateOverlay();

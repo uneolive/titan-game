@@ -21,8 +21,8 @@
           </div>
         </div>
         <div class="header-actions">
-          <button id="menuButton" class="button subtle" type="button">Quit to Menu</button>
-          <button id="powerDownButton" class="button subtle" type="button">Power Down</button>
+          <button id="pauseButton" class="button subtle" type="button">Pause</button>
+          <button id="musicButton" class="button subtle" type="button">Music On</button>
         </div>
       </header>
 
@@ -38,13 +38,21 @@
           <p id="controlSupport" class="support">3 missile slots available</p>
         </article>
         <article class="panel">
-          <span class="label">Base Status</span>
-          <div id="baseStatus" class="pill-row"></div>
-        </article>
-        <article class="panel">
           <span class="label">Power Grid</span>
           <strong id="powerValue" class="value">0</strong>
           <p id="powerSupport" class="support">No active boosts</p>
+        </article>
+        <article class="panel settings-panel">
+          <span class="label">Controls</span>
+          <div class="choice-row">
+            <button id="mouseModeButton" class="choice active" type="button">Mouse Aim</button>
+            <button id="keyboardModeButton" class="choice" type="button">Keyboard Aim</button>
+          </div>
+          <div class="slider-row">
+            <span class="support">Reticle speed</span>
+            <strong id="speedValue" class="mini-value">300</strong>
+          </div>
+          <input id="speedSlider" type="range" min="180" max="520" step="20" value="300" />
         </article>
       </section>
 
@@ -61,42 +69,14 @@
               </div>
             </div>
             <p id="dialogDescription" class="dialog-copy">
-              Pick your control scheme, arm the launchers, and hold the line against incoming bombardment.
+              Pick your control scheme from the top controls, arm the launchers, and hold the line against incoming bombardment.
             </p>
-
-            <div class="dialog-grid">
-              <article class="panel inner-panel">
-                <h3>Reticle Control</h3>
-                <div class="choice-row">
-                  <button id="mouseModeButton" class="choice active" type="button">Mouse Aim</button>
-                  <button id="keyboardModeButton" class="choice" type="button">Keyboard Aim</button>
-                </div>
-                <p>Mouse mode limits active missiles. Keyboard mode uses WASD or arrows plus space or enter.</p>
-              </article>
-
-              <article class="panel inner-panel">
-                <h3>Keyboard Reticle Speed</h3>
-                <input id="speedSlider" type="range" min="180" max="520" step="20" value="300" />
-                <p><span id="speedValue">300</span> px/s when keyboard aim is active.</p>
-              </article>
-
-              <article class="panel inner-panel">
-                <h3>Mission Notes</h3>
-                <p>
-                  Power ups repair destroyed bases, freeze incoming threats, or boost your fire rate.
-                </p>
-                <div class="choice-row">
-                  <button id="soundButton" class="choice active" type="button">Sound On</button>
-                </div>
-              </article>
-            </div>
 
             <footer class="dialog-footer">
               <p id="dialogTip" class="support">
                 Click to fire in mouse mode. In keyboard mode, move then press space or enter.
               </p>
               <div class="choice-row">
-                <button id="stopButton" class="button subtle" type="button">Stop Session</button>
                 <button id="startButton" class="button primary" type="button">Start Game</button>
               </div>
             </footer>
