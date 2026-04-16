@@ -2,6 +2,7 @@ import { useLogin } from './Login.vm.ts';
 import { Spinner } from '@/ui/reusables/Spinner/Spinner.tsx';
 import logoSvg from '@/assets/images/logo.svg';
 import passwordToggleSvg from '@/assets/images/password-toggle.svg';
+import { Link } from 'react-router-dom';
 
 export function Login() {
   const {
@@ -107,6 +108,18 @@ export function Login() {
               )}
             </button>
           </form>
+
+          <div className="mt-4 border-t border-gray-100 pt-4">
+            <p className="mb-3 text-center text-xs leading-[18px] text-gray-500">
+              Want the playable prototype instead?
+            </p>
+            <Link
+              to="/titan-command"
+              className="flex h-[38.5px] w-full items-center justify-center rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium leading-[17.5px] text-gray-900 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+              Launch Titan Command
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -56,6 +56,11 @@ const AIResult = lazyWithError(
   'AIResult',
   'AI result screen'
 );
+const TitanCommand = lazyWithError(
+  () => import('@/ui/screens/TitanCommand/TitanCommand.tsx'),
+  'TitanCommand',
+  'Titan Command screen'
+);
 
 export function AppRouter() {
   const loadingFallback = (
@@ -70,6 +75,14 @@ export function AppRouter() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route
+          path="/titan-command"
+          element={
+            <Suspense fallback={loadingFallback}>
+              <TitanCommand />
+            </Suspense>
+          }
+        />
         <Route
           path="/projects"
           element={

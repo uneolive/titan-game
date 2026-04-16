@@ -1,0 +1,302 @@
+.titan-command {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(83, 111, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, #071120 0%, #0a1c2f 58%, #041018 100%);
+  color: #eef4ff;
+}
+
+.titan-command__shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 32px;
+}
+
+.titan-command__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.titan-command__title-block h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  line-height: 0.95;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.titan-command__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.titan-command__brand img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.28));
+}
+
+.titan-command__title-block p {
+  margin: 10px 0 0;
+  max-width: 720px;
+  color: #aab8d7;
+  font-size: 0.98rem;
+}
+
+.titan-command__header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.titan-command__button {
+  border: 1px solid rgba(199, 214, 255, 0.16);
+  background: rgba(11, 28, 49, 0.86);
+  color: #eef4ff;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    border-color 140ms ease;
+}
+
+.titan-command__button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 210, 117, 0.4);
+  background: rgba(21, 44, 74, 0.92);
+}
+
+.titan-command__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+  transform: none;
+}
+
+.titan-command__button--primary {
+  background: linear-gradient(135deg, #ffcc63, #ff7a59);
+  color: #08111d;
+  border: 0;
+}
+
+.titan-command__button--primary:hover {
+  background: linear-gradient(135deg, #ffd784, #ff8f6c);
+}
+
+.titan-command__hud {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.titan-command__panel {
+  border: 1px solid rgba(199, 214, 255, 0.14);
+  background: rgba(7, 20, 35, 0.7);
+  border-radius: 18px;
+  padding: 14px 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.titan-command__stat-label {
+  color: #8ea1c8;
+  display: block;
+  font-size: 0.76rem;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.titan-command__stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.titan-command__stat-subtle {
+  margin: 6px 0 0;
+  color: #b7c5e4;
+  font-size: 0.86rem;
+}
+
+.titan-command__bases {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.titan-command__base-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  background: rgba(134, 255, 182, 0.12);
+  color: #b5ffcd;
+  border: 1px solid rgba(134, 255, 182, 0.2);
+}
+
+.titan-command__base-pill--down {
+  background: rgba(255, 105, 105, 0.12);
+  color: #ffc0c0;
+  border-color: rgba(255, 105, 105, 0.24);
+}
+
+.titan-command__arena-frame {
+  position: relative;
+  border-radius: 26px;
+  overflow: hidden;
+  border: 1px solid rgba(186, 204, 255, 0.14);
+  background: #020812;
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.titan-command__canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  cursor: crosshair;
+}
+
+.titan-command__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, rgba(2, 9, 16, 0.58), rgba(2, 9, 16, 0.82));
+}
+
+.titan-command__dialog {
+  width: min(560px, 100%);
+  border-radius: 24px;
+  border: 1px solid rgba(204, 216, 255, 0.16);
+  background: rgba(7, 20, 35, 0.92);
+  padding: 24px;
+  backdrop-filter: blur(16px);
+}
+
+.titan-command__dialog h2 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.titan-command__dialog-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.titan-command__dialog-brand img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.titan-command__dialog p {
+  margin: 12px 0 0;
+  color: #aab8d7;
+  line-height: 1.5;
+}
+
+.titan-command__controls {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.titan-command__control-card {
+  border: 1px solid rgba(182, 199, 255, 0.12);
+  background: rgba(10, 25, 42, 0.78);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+
+.titan-command__control-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+.titan-command__choice-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.titan-command__choice {
+  border-radius: 999px;
+  border: 1px solid rgba(197, 213, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  color: #dce6ff;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+.titan-command__choice--active {
+  background: rgba(255, 201, 98, 0.14);
+  color: #ffe6b4;
+  border-color: rgba(255, 201, 98, 0.34);
+}
+
+.titan-command__slider {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.titan-command__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.titan-command__tipline {
+  color: #9eb0d3;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 900px) {
+  .titan-command__hud {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .titan-command__header {
+    flex-direction: column;
+  }
+
+  .titan-command__header-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .titan-command__shell {
+    width: min(100vw - 20px, 1180px);
+    padding-top: 18px;
+  }
+
+  .titan-command__hud {
+    grid-template-columns: 1fr;
+  }
+
+  .titan-command__dialog {
+    padding: 20px;
+  }
+}
