@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Titan Command</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div class="brand-block">
+          <img src="./assets/team-titan-emblem.png" alt="Team Titan insignia" class="brand-mark" />
+          <div>
+            <p class="eyebrow">Orbital Defense Simulation</p>
+            <h1>Titan Command</h1>
+            <p class="subtitle">
+              Defend the colony bases from incoming projectiles. Destroy missiles inside your blast
+              radius before they hit the ground.
+            </p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="menuButton" class="button subtle" type="button">Quit to Menu</button>
+          <button id="powerDownButton" class="button subtle" type="button">Power Down</button>
+        </div>
+      </header>
+
+      <section class="hud-grid">
+        <article class="panel">
+          <span class="label">Score</span>
+          <strong id="scoreValue" class="value">0</strong>
+          <p class="support">Level increases every 850 points.</p>
+        </article>
+        <article class="panel">
+          <span class="label">Threat Level</span>
+          <strong id="levelValue" class="value">1</strong>
+          <p id="controlSupport" class="support">3 missile slots available</p>
+        </article>
+        <article class="panel">
+          <span class="label">Base Status</span>
+          <div id="baseStatus" class="pill-row"></div>
+        </article>
+        <article class="panel">
+          <span class="label">Power Grid</span>
+          <strong id="powerValue" class="value">0</strong>
+          <p id="powerSupport" class="support">No active boosts</p>
+        </article>
+      </section>
+
+      <section class="arena-frame">
+        <canvas id="gameCanvas" width="960" height="640" aria-label="Titan Command game arena"></canvas>
+
+        <div id="overlay" class="overlay">
+          <section class="dialog">
+            <div class="dialog-header">
+              <img src="./assets/team-titan-emblem.png" alt="Team Titan insignia" class="dialog-mark" />
+              <div>
+                <p id="dialogEyebrow" class="eyebrow">Titan Network</p>
+                <h2 id="dialogTitle">Initialize defense grid</h2>
+              </div>
+            </div>
+            <p id="dialogDescription" class="dialog-copy">
+              Pick your control scheme, arm the launchers, and hold the line against incoming bombardment.
+            </p>
+
+            <div class="dialog-grid">
+              <article class="panel inner-panel">
+                <h3>Reticle Control</h3>
+                <div class="choice-row">
+                  <button id="mouseModeButton" class="choice active" type="button">Mouse Aim</button>
+                  <button id="keyboardModeButton" class="choice" type="button">Keyboard Aim</button>
+                </div>
+                <p>Mouse mode limits active missiles. Keyboard mode uses WASD or arrows plus space or enter.</p>
+              </article>
+
+              <article class="panel inner-panel">
+                <h3>Keyboard Reticle Speed</h3>
+                <input id="speedSlider" type="range" min="180" max="520" step="20" value="300" />
+                <p><span id="speedValue">300</span> px/s when keyboard aim is active.</p>
+              </article>
+
+              <article class="panel inner-panel">
+                <h3>Mission Notes</h3>
+                <p>
+                  Power ups repair destroyed bases, freeze incoming threats, or boost your fire rate.
+                </p>
+                <div class="choice-row">
+                  <button id="soundButton" class="choice active" type="button">Sound On</button>
+                </div>
+              </article>
+            </div>
+
+            <footer class="dialog-footer">
+              <p id="dialogTip" class="support">
+                Click to fire in mouse mode. In keyboard mode, move then press space or enter.
+              </p>
+              <div class="choice-row">
+                <button id="stopButton" class="button subtle" type="button">Stop Session</button>
+                <button id="startButton" class="button primary" type="button">Start Game</button>
+              </div>
+            </footer>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
